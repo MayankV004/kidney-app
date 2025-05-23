@@ -1,7 +1,9 @@
 import bcrypt from "bcryptjs";
 import User from "../models/user-model.js";
 import NutrientTarget from "../models/nutrientTarget-model.js";
+import jwt from 'jsonwebtoken';
 
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 export const signUp = async (req, res) => {
   try {
     const { name, email, password } = req.body;
