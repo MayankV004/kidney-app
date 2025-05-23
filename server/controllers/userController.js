@@ -4,8 +4,9 @@ export const getUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.userId).select("-password");
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "User not found" });`1`
     }
+    console.log("data sent")
     res.json(user);
   } catch (error) {
     console.error("Get profile error:", error);

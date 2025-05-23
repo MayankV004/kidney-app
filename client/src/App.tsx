@@ -1,108 +1,48 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import { DietProvider } from './context/DietContext';
-import { FoodProvider } from './context/FoodContext';
-import { Header } from './components/layout/Header';
-import { Footer } from './components/layout/Footer';
-import { AuthPage } from './pages/AuthPage';
-import { OnboardingPage } from './pages/OnboardingPage';
-import { DashboardPage } from './pages/DashboardPage';
-import { DietChartPage } from './pages/DietChartPage';
-import { MealsPage } from './pages/MealsPage';
-import { TrackingPage } from './pages/TrackingPage';
-import { HelpPage } from './pages/HelpPage';
-import { useAuth } from './context/AuthContext';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Login from './components/Login';
+import Signup from './components/Signup';
+import Dashboard from './components/Dashboard';
 
-// const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-//   const { isAuthenticated, isLoading } = useAuth();
+export default function App(): JSX.Element {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-//   if (isLoading) {
-//     return <div className="flex min-h-screen items-center justify-center">Loading...</div>;
-//   }
+  // Check authentication status on app load
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsAuthenticated(!!token);
+    setIsLoading(false);
+  }, []);
 
-//   if (!isAuthenticated) {
-//     return <Navigate to="/auth" />;
-//   }
+  // Function to update auth state (pass this to Login/Signup components)
+  const updateAuthState = (authenticated: boolean): void => {
+    setIsAuthenticated(authenticated);
+  };
 
-//   return <>{children}</>;
-// };
+  // Show loading while checking auth state
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
-const AppRoutes = () => {
   return (
     <Routes>
-      {/* <Route path="/auth" element={<AuthPage />} /> */}
-      <Route
-        path="/onboarding"
-        element={
-         // <ProtectedRoute>
-            <OnboardingPage />
-          //</ProtectedRoute>
-        }
+      <Route 
+        path="/" 
+        element={isAuthenticated ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} 
       />
-      <Route
-        path="/dashboard"
-        element={
-          //<ProtectedRoute>
-            <DashboardPage />
-          //</ProtectedRoute>
-        }
+      <Route 
+        path="/login" 
+        element={isAuthenticated ? <Navigate to="/dashboard" /> : <Login updateAuthState={updateAuthState} />} 
       />
-      <Route
-        path="/diet-chart"
-        element={
-         // <ProtectedRoute>
-            <DietChartPage />
-         // </ProtectedRoute>
-        }
+      <Route 
+        path="/signup" 
+        element={isAuthenticated ? <Navigate to="/dashboard" /> : <Signup updateAuthState={updateAuthState} />} 
       />
-      <Route
-        path="/meals"
-        element={
-         // <ProtectedRoute>
-            <MealsPage />
-         // </ProtectedRoute>
-        }
+      <Route 
+        path="/dashboard" 
+        element={isAuthenticated ? <Dashboard updateAuthState={updateAuthState} /> : <Navigate to="/login" />} 
       />
-      <Route
-        path="/tracking"
-        element={
-         // <ProtectedRoute>
-            <TrackingPage />
-         // </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/help"
-        element={
-          //<ProtectedRoute>
-            <HelpPage />
-         // </ProtectedRoute>
-        }
-      />
-      <Route path="/" element={<Navigate to="/dashboard" />} />
     </Routes>
   );
-};
-
-function App() {
-  return (
-    <Router>
-      <AuthProvider>
-        <DietProvider>
-          <FoodProvider>
-            <div className="flex flex-col min-h-screen bg-neutral-50">
-              <Header />
-              <main className="flex-grow">
-                <AppRoutes />
-              </main>
-              <Footer />
-            </div>
-          </FoodProvider>
-        </DietProvider>
-      </AuthProvider>
-    </Router>
-  );
 }
-
-export default App;
