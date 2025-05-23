@@ -36,7 +36,7 @@ export const createFood = async (req, res) => {
   try {
     const food = new Food(req.body);
     await food.save();
-    res.status(201).json({ message: "Food created successfully", food });
+    res.status(201).json(food);
   } catch (error) {
     console.error("Create food error:", error);
     res.status(500).json({ error: "Internal server error" });

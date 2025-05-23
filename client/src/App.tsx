@@ -3,6 +3,8 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import Signup from './components/Signup';
 import Dashboard from './components/Dashboard';
+import FoodSearchComponent from './components/food/FoodSearchComponent';
+
 
 export default function App(): JSX.Element {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -42,6 +44,10 @@ export default function App(): JSX.Element {
       <Route 
         path="/dashboard" 
         element={isAuthenticated ? <Dashboard updateAuthState={updateAuthState} /> : <Navigate to="/login" />} 
+      />
+      <Route 
+        path="/food" 
+        element={isAuthenticated ? <FoodSearchComponent /> : <Navigate to="/login" />} 
       />
     </Routes>
   );
