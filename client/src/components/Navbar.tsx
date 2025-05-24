@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Menu, X, Home, Plus, BarChart3, FileText, LogOut, User, Settings } from 'lucide-react';
+import { Menu, X, Home, Plus, BarChart3, FileText, LogOut, User, Settings, Apple } from 'lucide-react';
 import { NavLink, useLocation } from 'react-router-dom';
 
 interface NavLink {
@@ -34,7 +34,7 @@ const Navbar: React.FC<NavbarProps> = ({ userName = "User", onLogout, onNavigate
 
   const navLinks: NavLink[] = [
     { name: 'Dashboard', href: '/dashboard', icon: <Home size={20} /> },
-    { name: 'Add Food', href: '/food', icon: <Plus size={20} /> },
+    { name: 'Meals', href: '/food', icon: <Apple size={20} /> },
     { name: 'Daily Total', href: '/daily-total', icon: <BarChart3 size={20} /> },
     { name: 'Diet Chart', href: '/diet-chart', icon: <FileText size={20} /> },
   ];
