@@ -1,7 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { User, Activity, Settings, CheckCircle, AlertCircle } from 'lucide-react';
+import { User, Activity, Settings, CheckCircle, AlertCircle, RefreshCw, Calendar } from 'lucide-react';
 
 // Type definitions
+interface DietChart {
+  _id: string;
+  userId: string;
+  protein: number;
+  calories: number;
+  carbohydrates: number;
+  fats: number;
+  potassium: number;
+  phosphorus: number;
+  sodium: number;
+  calcium: number;
+  magnesium: number;
+  water: number;
+  updatedAt: string;
+}
+
 interface UserProfile {
   _id: string;
   name: string;
@@ -10,6 +26,7 @@ interface UserProfile {
   ckdStage?: 'STAGE_1' | 'STAGE_2' | 'STAGE_3' | 'STAGE_4' | 'STAGE_5';
   createdAt: string;
   updatedAt: string;
+  dietChart?: DietChart;
 }
 
 interface NutrientTargets {
@@ -40,6 +57,7 @@ const DietChartGenerator: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [message, setMessage] = useState<string>('');
   const [generatedTargets, setGeneratedTargets] = useState<NutrientTargets | null>(null);
+  const [showGenerateNew, setShowGenerateNew] = useState<boolean>(false);
   const [customValues, setCustomValues] = useState<NutrientTargets>({
     protein: 60,
     calories: 2000,
@@ -60,7 +78,6 @@ const DietChartGenerator: React.FC = () => {
   }, []);
 
   const fetchUserProfile = async (): Promise<void> => {
-    //const API=import.meta.env.API
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -83,6 +100,11 @@ const DietChartGenerator: React.FC = () => {
         setUserProfile(userData);
         if (userData.age) {
           setAgeInput(userData.age.toString());
+        }
+        
+        // If user has existing diet chart, don't show generate new by default
+        if (userData.dietChart) {
+          setShowGenerateNew(false);
         }
       } else {
         const errorData: ApiResponse = await response.json();
@@ -121,6 +143,9 @@ const DietChartGenerator: React.FC = () => {
       if (response.ok && data.targets) {
         setMessage(data.message || 'Diet chart generated successfully');
         setGeneratedTargets(data.targets);
+        // Refresh user profile to get updated diet chart
+        await fetchUserProfile();
+        setShowGenerateNew(false);
       } else {
         setMessage(data.error || 'Error generating diet chart');
       }
@@ -157,6 +182,9 @@ const DietChartGenerator: React.FC = () => {
       if (response.ok) {
         setMessage(data.message || 'Custom diet chart saved successfully');
         setGeneratedTargets(customValues);
+        // Refresh user profile to get updated diet chart
+        await fetchUserProfile();
+        setShowGenerateNew(false);
       } else {
         setMessage(data.error || 'Error saving custom values');
       }
@@ -200,6 +228,20 @@ const DietChartGenerator: React.FC = () => {
     }));
   };
 
+  const handleGenerateNew = (): void => {
+    setShowGenerateNew(true);
+    setSelectedMethod('');
+    setGeneratedTargets(null);
+    setMessage('');
+  };
+
+  const handleCancelGenerate = (): void => {
+    setShowGenerateNew(false);
+    setSelectedMethod('');
+    setGeneratedTargets(null);
+    setMessage('');
+  };
+
   const nutrientLabels: Record<keyof NutrientTargets, string> = {
     protein: 'Protein (g)',
     calories: 'Calories (kcal)',
@@ -215,6 +257,16 @@ const DietChartGenerator: React.FC = () => {
 
   const formatCkdStage = (stage: string): string => {
     return stage.replace('_', ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  const formatDate = (dateString: string): string => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   const isSuccessMessage = (msg: string): boolean => {
@@ -235,147 +287,204 @@ const DietChartGenerator: React.FC = () => {
         </div>
 
         <div className="p-6">
-          {/* Method Selection */}
-          <div className="mb-8">
-            <h2 className="text-lg font-semibold mb-4">Choose Generation Method</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button
-                onClick={() => handleMethodSelect('AGE_BASED')}
-                className={`p-4 border-2 rounded-lg transition-all ${
-                  selectedMethod === 'AGE_BASED'
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-                type="button"
-              >
-                <User className="mx-auto mb-2 text-blue-600" size={24} />
-                <h3 className="font-medium">Age Based</h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  Generate based on your age group
-                </p>
-              </button>
-
-              <button
-                onClick={() => handleMethodSelect('CKD_STAGE')}
-                className={`p-4 border-2 rounded-lg transition-all ${
-                  selectedMethod === 'CKD_STAGE'
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-                type="button"
-              >
-                <AlertCircle className="mx-auto mb-2 text-green-600" size={24} />
-                <h3 className="font-medium">CKD Stage</h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  Based on kidney disease stage
-                </p>
-              </button>
-
-              <button
-                onClick={() => handleMethodSelect('CUSTOM')}
-                className={`p-4 border-2 rounded-lg transition-all ${
-                  selectedMethod === 'CUSTOM'
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-                type="button"
-              >
-                <Settings className="mx-auto mb-2 text-purple-600" size={24} />
-                <h3 className="font-medium">Custom Values</h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  Set your own nutrient targets
-                </p>
-              </button>
-            </div>
-          </div>
-
-          {/* Age Based Form */}
-          {selectedMethod === 'AGE_BASED' && (
-            <div className="bg-gray-50 p-6 rounded-lg mb-6">
-              <h3 className="text-lg font-medium mb-4">Age Based Generation</h3>
-              <div className="flex items-center gap-4">
+          {/* Existing Diet Chart Display */}
+          {userProfile?.dietChart && !showGenerateNew && (
+            <div className="bg-blue-50 p-6 rounded-lg mb-6 border border-blue-200">
+              <div className="flex justify-between items-start mb-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Your Age
-                  </label>
-                  <input
-                    type="number"
-                    value={ageInput}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAgeInput(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter your age"
-                    min="1"
-                    max="120"
-                  />
+                  <h3 className="text-lg font-medium text-blue-800 flex items-center gap-2">
+                    <CheckCircle size={20} />
+                    Your Current Diet Chart
+                  </h3>
+                  <p className="text-blue-600 text-sm mt-1 flex items-center gap-1">
+                    <Calendar size={16} />
+                    Last updated: {formatDate(userProfile.dietChart.updatedAt)}
+                  </p>
                 </div>
                 <button
-                  onClick={handleAgeBasedGeneration}
-                  disabled={loading}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                  onClick={handleGenerateNew}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
                   type="button"
                 >
-                  {loading ? 'Generating...' : 'Generate Diet Chart'}
+                  <RefreshCw size={16} />
+                  Generate New
                 </button>
               </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {(Object.entries(userProfile.dietChart) as [string, any][])
+                  .filter(([key]) => key !== '_id' && key !== 'userId' && key !== 'updatedAt')
+                  .map(([key, value]) => (
+                    <div key={key} className="bg-white p-3 rounded-md border border-blue-200">
+                      <div className="text-sm text-gray-600">{nutrientLabels[key as keyof NutrientTargets]}</div>
+                      <div className="text-lg font-semibold text-blue-700">{value}</div>
+                    </div>
+                  ))}
+              </div>
             </div>
           )}
 
-          {/* CKD Stage Form */}
-          {selectedMethod === 'CKD_STAGE' && (
-            <div className="bg-gray-50 p-6 rounded-lg mb-6">
-              <h3 className="text-lg font-medium mb-4">CKD Stage Based Generation</h3>
-              {userProfile?.ckdStage ? (
-                <div>
-                  <p className="text-gray-700 mb-4">
-                    Your CKD Stage: <span className="font-medium">{formatCkdStage(userProfile.ckdStage)}</span>
-                  </p>
+          {/* Show generate new section when no existing chart or user wants to generate new */}
+          {(!userProfile?.dietChart || showGenerateNew) && (
+            <>
+              {/* Cancel button when generating new */}
+              {userProfile?.dietChart && showGenerateNew && (
+                <div className="mb-4">
                   <button
-                    onClick={handleCkdStageGeneration}
-                    disabled={loading}
-                    className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 transition-colors"
+                    onClick={handleCancelGenerate}
+                    className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors"
                     type="button"
                   >
-                    {loading ? 'Generating...' : 'Generate Diet Chart'}
+                    ← Back to Current Chart
                   </button>
                 </div>
-              ) : (
-                <div className="text-amber-600">
-                  <p>CKD stage not found in your profile. Please update your profile to use this option.</p>
+              )}
+
+              {/* Method Selection */}
+              <div className="mb-8">
+                <h2 className="text-lg font-semibold mb-4">
+                  {userProfile?.dietChart ? 'Generate New Diet Chart' : 'Choose Generation Method'}
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <button
+                    onClick={() => handleMethodSelect('AGE_BASED')}
+                    className={`p-4 border-2 rounded-lg transition-all ${
+                      selectedMethod === 'AGE_BASED'
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    type="button"
+                  >
+                    <User className="mx-auto mb-2 text-blue-600" size={24} />
+                    <h3 className="font-medium">Age Based</h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Generate based on your age group
+                    </p>
+                  </button>
+
+                  <button
+                    onClick={() => handleMethodSelect('CKD_STAGE')}
+                    className={`p-4 border-2 rounded-lg transition-all ${
+                      selectedMethod === 'CKD_STAGE'
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    type="button"
+                  >
+                    <AlertCircle className="mx-auto mb-2 text-green-600" size={24} />
+                    <h3 className="font-medium">CKD Stage</h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Based on kidney disease stage
+                    </p>
+                  </button>
+
+                  <button
+                    onClick={() => handleMethodSelect('CUSTOM')}
+                    className={`p-4 border-2 rounded-lg transition-all ${
+                      selectedMethod === 'CUSTOM'
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                    type="button"
+                  >
+                    <Settings className="mx-auto mb-2 text-purple-600" size={24} />
+                    <h3 className="font-medium">Custom Values</h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Set your own nutrient targets
+                    </p>
+                  </button>
+                </div>
+              </div>
+
+              {/* Age Based Form */}
+              {selectedMethod === 'AGE_BASED' && (
+                <div className="bg-gray-50 p-6 rounded-lg mb-6">
+                  <h3 className="text-lg font-medium mb-4">Age Based Generation</h3>
+                  <div className="flex items-center gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Your Age
+                      </label>
+                      <input
+                        type="number"
+                        value={ageInput}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAgeInput(e.target.value)}
+                        className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Enter your age"
+                        min="1"
+                        max="120"
+                      />
+                    </div>
+                    <button
+                      onClick={handleAgeBasedGeneration}
+                      disabled={loading}
+                      className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                      type="button"
+                    >
+                      {loading ? 'Generating...' : 'Generate Diet Chart'}
+                    </button>
+                  </div>
                 </div>
               )}
-            </div>
-          )}
 
-          {/* Custom Values Form */}
-          {selectedMethod === 'CUSTOM' && (
-            <div className="bg-gray-50 p-6 rounded-lg mb-6">
-              <h3 className="text-lg font-medium mb-4">Custom Nutrient Targets</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                {(Object.entries(customValues) as [keyof NutrientTargets, number][]).map(([key, value]) => (
-                  <div key={key}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {nutrientLabels[key]}
-                    </label>
-                    <input
-                      type="number"
-                      value={value}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleCustomValueChange(key, e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      min="0"
-                      step="0.1"
-                    />
+              {/* CKD Stage Form */}
+              {selectedMethod === 'CKD_STAGE' && (
+                <div className="bg-gray-50 p-6 rounded-lg mb-6">
+                  <h3 className="text-lg font-medium mb-4">CKD Stage Based Generation</h3>
+                  {userProfile?.ckdStage ? (
+                    <div>
+                      <p className="text-gray-700 mb-4">
+                        Your CKD Stage: <span className="font-medium">{formatCkdStage(userProfile.ckdStage)}</span>
+                      </p>
+                      <button
+                        onClick={handleCkdStageGeneration}
+                        disabled={loading}
+                        className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 transition-colors"
+                        type="button"
+                      >
+                        {loading ? 'Generating...' : 'Generate Diet Chart'}
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="text-amber-600">
+                      <p>CKD stage not found in your profile. Please update your profile to use this option.</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Custom Values Form */}
+              {selectedMethod === 'CUSTOM' && (
+                <div className="bg-gray-50 p-6 rounded-lg mb-6">
+                  <h3 className="text-lg font-medium mb-4">Custom Nutrient Targets</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    {(Object.entries(customValues) as [keyof NutrientTargets, number][]).map(([key, value]) => (
+                      <div key={key}>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          {nutrientLabels[key]}
+                        </label>
+                        <input
+                          type="number"
+                          value={value}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleCustomValueChange(key, e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          min="0"
+                          step="0.1"
+                        />
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-              <button
-                onClick={saveCustomValues}
-                disabled={loading}
-                className="px-6 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 transition-colors"
-                type="button"
-              >
-                {loading ? 'Saving...' : 'Save Custom Diet Chart'}
-              </button>
-            </div>
+                  <button
+                    onClick={saveCustomValues}
+                    disabled={loading}
+                    className="px-6 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50 transition-colors"
+                    type="button"
+                  >
+                    {loading ? 'Saving...' : 'Save Custom Diet Chart'}
+                  </button>
+                </div>
+              )}
+            </>
           )}
 
           {/* Message Display */}
@@ -396,10 +505,10 @@ const DietChartGenerator: React.FC = () => {
             </div>
           )}
 
-          {/* Generated Targets Display */}
-          {generatedTargets && (
+          {/* Generated Targets Display (for newly generated charts) */}
+          {generatedTargets && showGenerateNew && (
             <div className="bg-green-50 p-6 rounded-lg">
-              <h3 className="text-lg font-medium mb-4 text-green-800">Your Diet Chart Targets</h3>
+              <h3 className="text-lg font-medium mb-4 text-green-800">Your New Diet Chart Targets</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {(Object.entries(generatedTargets) as [keyof NutrientTargets, number][]).map(([key, value]) => (
                   <div key={key} className="bg-white p-3 rounded-md border border-green-200">
@@ -408,6 +517,15 @@ const DietChartGenerator: React.FC = () => {
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* No diet chart message */}
+          {!userProfile?.dietChart && !showGenerateNew && selectedMethod === '' && (
+            <div className="text-center py-8 text-gray-500">
+              <Activity size={48} className="mx-auto mb-4 text-gray-400" />
+              <p className="text-lg mb-2">No diet chart found</p>
+              <p className="text-sm">Choose a generation method above to create your personalized diet chart</p>
             </div>
           )}
         </div>
