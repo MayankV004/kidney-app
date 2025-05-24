@@ -8,6 +8,6 @@ import {
 const router = express.Router();
 
 router.get("/", authenticateToken, getNutrientTarget);
-router.put("/", authenticateToken, updateNutrientTarget);
+router.post("/", authenticateToken, updateNutrientTarget);
 
 export default router;

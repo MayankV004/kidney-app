@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, User, Home, Settings, Bell, AlertCircle, Edit3, X, Save } from 'lucide-react';
+import { LogOut, User, Home, Settings, Bell, AlertCircle, Edit3, X, Save, ChevronRight, FileText, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Navbar from './Navbar';
 
 interface DashboardProps {
   updateAuthState: (authenticated: boolean) => void;
@@ -17,6 +18,14 @@ interface UserProfile {
   activityLevel?: string;
   dietaryPreferences?: string[];
   healthGoals?: string[];
+  // CKD-specific fields
+  ckdStage?: string;
+  onDialysis?: boolean;
+  hasDiabetes?: boolean;
+  hasHypertension?: boolean;
+  howDidYouHear?: string;
+  medicalConditions?: string[];
+  profileCompleted?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -33,13 +42,23 @@ interface EditFormData {
   healthGoals: string[];
 }
 
+interface CKDFormData {
+  howDidYouHear: string;
+  ckdStage: string;
+  onDialysis: boolean;
+  hasDiabetes: boolean;
+  hasHypertension: boolean;
+}
+
 export default function Dashboard({ updateAuthState }: DashboardProps) {
   const navigate = useNavigate();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isCKDModalOpen, setIsCKDModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [profileComplete, setProfileComplete] = useState(false);
   const [editFormData, setEditFormData] = useState<EditFormData>({
     name: '',
     email: '',
@@ -50,6 +69,14 @@ export default function Dashboard({ updateAuthState }: DashboardProps) {
     activityLevel: '',
     dietaryPreferences: [],
     healthGoals: []
+  });
+
+  const [ckdFormData, setCKDFormData] = useState<CKDFormData>({
+    howDidYouHear: '',
+    ckdStage: '',
+    onDialysis: false,
+    hasDiabetes: false,
+    hasHypertension: false
   });
 
   // Common dietary preferences and health goals for dropdowns
@@ -69,6 +96,37 @@ export default function Dashboard({ updateAuthState }: DashboardProps) {
   ];
 
   const genderOptions = ['male', 'female', 'other'];
+
+  const ckdStageOptions = [
+    { value: 'STAGE_1', label: 'CKD Stage 1' },
+    { value: 'STAGE_2', label: 'CKD Stage 2' },
+    { value: 'STAGE_3', label: 'CKD Stage 3' },
+    { value: 'STAGE_4', label: 'CKD Stage 4' },
+    { value: 'STAGE_5', label: 'CKD Stage 5' },
+    { value: 'NOT_DIAGNOSED', label: 'Not yet diagnosed' }
+  ];
+
+  const howDidYouHearOptions = [
+    'Doctor/Healthcare Provider',
+    'Search Engine (Google, Bing)',
+    'Social Media',
+    'Friend/Family Recommendation',
+    'Medical Website/Blog',
+    'Health Forum/Community',
+    'Advertisement',
+    'Other'
+  ];
+
+  // Check if profile is complete for CKD questionnaire
+const isProfileComplete = () => {
+  if (!userProfile) return false;
+  console.log("Here is user profile",userProfile.medicalConditions?.length);
+  
+  return userProfile.ckdStage && 
+        
+         (userProfile.medicalConditions?.length ==0||   userProfile.medicalConditions?.length==1 ||userProfile.medicalConditions?.length==2 || userProfile.medicalConditions?.length==3)
+         
+};
 
   // Fetch user profile from backend
   const fetchUserProfile = async () => {
@@ -134,7 +192,9 @@ export default function Dashboard({ updateAuthState }: DashboardProps) {
 
       const result = await response.json();
       setUserProfile(result.user);
+      console.log('Updated user profile:', result.user);
       setIsEditModalOpen(false);
+      setIsCKDModalOpen(false);
       setError(null);
     } catch (error) {
       console.error('Error updating user profile:', error);
@@ -148,6 +208,18 @@ export default function Dashboard({ updateAuthState }: DashboardProps) {
     fetchUserProfile();
   }, []);
 
+  useEffect(() => {
+  if (userProfile) {
+    const complete = userProfile.ckdStage && 
+                    userProfile.howDidYouHear &&
+                    userProfile.onDialysis !== undefined &&
+                    userProfile.hasDiabetes !== undefined &&
+                    userProfile.hasHypertension !== undefined;
+    console.log(userProfile.onDialysis);
+          
+    setProfileComplete(Boolean(complete));
+  }
+}, [userProfile]);
   // Initialize edit form when modal opens
   useEffect(() => {
     if (isEditModalOpen && userProfile) {
@@ -164,6 +236,19 @@ export default function Dashboard({ updateAuthState }: DashboardProps) {
       });
     }
   }, [isEditModalOpen, userProfile]);
+
+  // Initialize CKD form when modal opens
+  useEffect(() => {
+    if (isCKDModalOpen && userProfile) {
+      setCKDFormData({
+        howDidYouHear: userProfile.howDidYouHear || '',
+        ckdStage: userProfile.ckdStage || '',
+        onDialysis: userProfile.onDialysis || false,
+        hasDiabetes: userProfile.hasDiabetes || false,
+        hasHypertension: userProfile.hasHypertension || false
+      });
+    }
+  }, [isCKDModalOpen, userProfile]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -186,6 +271,28 @@ export default function Dashboard({ updateAuthState }: DashboardProps) {
       ...(editFormData.activityLevel && { activityLevel: editFormData.activityLevel }),
       dietaryPreferences: editFormData.dietaryPreferences,
       healthGoals: editFormData.healthGoals
+    };
+
+    updateUserProfile(updateData);
+  };
+
+  const handleCKDSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Prepare CKD update data
+    const updateData: Partial<UserProfile> = {
+      howDidYouHear: ckdFormData.howDidYouHear,
+      ckdStage: ckdFormData.ckdStage,
+      onDialysis: ckdFormData.onDialysis,
+      hasDiabetes: ckdFormData.hasDiabetes,
+      hasHypertension: ckdFormData.hasHypertension,
+      profileCompleted: true,
+      // Update medical conditions based on the responses
+      medicalConditions: [
+        ...(ckdFormData.hasDiabetes ? ['Diabetes'] : []),
+        ...(ckdFormData.hasHypertension ? ['Hypertension'] : []),
+        ...(ckdFormData.onDialysis ? ['On Dialysis'] : [])
+      ]
     };
 
     updateUserProfile(updateData);
@@ -224,6 +331,10 @@ export default function Dashboard({ updateAuthState }: DashboardProps) {
     ).join(' ');
   };
 
+  const formatCKDStage = (stage: string) => {
+    return stage.replace('STAGE_', 'CKD Stage ').replace('NOT_DIAGNOSED', 'Not yet diagnosed');
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
@@ -238,6 +349,7 @@ export default function Dashboard({ updateAuthState }: DashboardProps) {
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
+       
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <h2 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Dashboard</h2>
@@ -265,36 +377,6 @@ export default function Dashboard({ updateAuthState }: DashboardProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Home className="w-6 h-6 text-blue-600" />
-              </div>
-              <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                <Bell className="w-5 h-5" />
-              </button>
-              <button className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-                <Settings className="w-5 h-5" />
-              </button>
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-                  <span className="text-xs font-semibold text-white">
-                    {getUserInitials(userProfile.name)}
-                  </span>
-                </div>
-                <span className="text-sm font-medium text-gray-700">{userProfile.name}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -312,48 +394,71 @@ export default function Dashboard({ updateAuthState }: DashboardProps) {
                 <p className="text-gray-600 mt-1">Here's what's happening with your account today.</p>
               </div>
             </div>
-            <button
-              onClick={() => setIsEditModalOpen(true)}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-            >
-              <Edit3 className="w-4 h-4" />
-              <span>Edit Profile</span>
-            </button>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setIsEditModalOpen(true)}
+                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              >
+                <Edit3 className="w-4 h-4" />
+                <span>Edit Profile</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Dashboard Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Quick Actions</h3>
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <Settings className="w-5 h-5 text-green-600" />
+        {/* Profile Completion Alert */}
+        {!isProfileComplete() && (
+          <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-l-4 border-orange-400 rounded-xl p-6 mb-8">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                  <Heart className="w-5 h-5 text-orange-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-orange-900">Complete Your CKD Profile</h3>
+                  <p className="text-orange-700 mt-1">
+                    Help us create a personalized diet chart by completing your kidney health profile
+                  </p>
+                </div>
               </div>
+              <button
+                onClick={() => setIsCKDModalOpen(true)}
+                className="flex items-center space-x-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors"
+              >
+                <FileText className="w-4 h-4" />
+                <span>Complete Profile</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
-            <p className="text-gray-600 text-sm">Manage your account settings and preferences</p>
           </div>
+        )}
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
-              <div className="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <Bell className="w-5 h-5 text-yellow-600" />
+        {/* Diet Chart Generation Card */}
+        {isProfileComplete() && (
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-400 rounded-xl p-6 mb-8">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-green-900">Generate Your Personalized Diet Chart</h3>
+                  <p className="text-green-700 mt-1">
+                    Your profile is complete! Generate a customized CKD-friendly diet plan
+                  </p>
+                </div>
               </div>
+              <button
+                onClick={() => navigate('/diet-chart')}
+                className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+              >
+                <FileText className="w-4 h-4" />
+                <span>Generate Diet Chart</span>
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
-            <p className="text-gray-600 text-sm">Stay updated with your latest activities</p>
           </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Profile</h3>
-              <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <User className="w-5 h-5 text-blue-600" />
-              </div>
-            </div>
-            <p className="text-gray-600 text-sm">View and edit your profile information</p>
-          </div>
-        </div>
+        )}
 
         {/* Enhanced User Info Card */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -388,9 +493,9 @@ export default function Dashboard({ updateAuthState }: DashboardProps) {
             </div>
           </div>
 
-          {/* Health & Fitness Info */}
+          {/* Health & CKD Information */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Health & Fitness</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Health & CKD Information</h3>
             <div className="space-y-3">
               {userProfile.height && (
                 <div className="flex justify-between items-center py-2">
@@ -404,37 +509,40 @@ export default function Dashboard({ updateAuthState }: DashboardProps) {
                   <span className="font-medium text-gray-900">{userProfile.weight} kg</span>
                 </div>
               )}
-              {userProfile.activityLevel && (
+              {userProfile.ckdStage && (
                 <div className="flex justify-between items-center py-2 border-t border-gray-100">
-                  <span className="text-gray-600">Activity Level</span>
-                  <span className="font-medium text-gray-900">{formatActivityLevel(userProfile.activityLevel)}</span>
+                  <span className="text-gray-600">CKD Stage</span>
+                  <span className="font-medium text-gray-900">{formatCKDStage(userProfile.ckdStage)}</span>
                 </div>
               )}
-              {userProfile.dietaryPreferences && userProfile.dietaryPreferences.length > 0 && (
-                <div className="py-2 border-t border-gray-100">
-                  <span className="text-gray-600 block mb-2">Dietary Preferences</span>
-                  <div className="flex flex-wrap gap-1">
-                    {userProfile.dietaryPreferences.map((pref, index) => (
-                      <span
-                        key={index}
-                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
-                      >
-                        {pref}
-                      </span>
-                    ))}
-                  </div>
+              {userProfile.onDialysis !== undefined && (
+                <div className="flex justify-between items-center py-2 border-t border-gray-100">
+                  <span className="text-gray-600">On Dialysis</span>
+                  <span className="font-medium text-gray-900">{userProfile.onDialysis ? 'Yes' : 'No'}</span>
                 </div>
               )}
-              {userProfile.healthGoals && userProfile.healthGoals.length > 0 && (
+              {userProfile.hasDiabetes !== undefined && (
+                <div className="flex justify-between items-center py-2 border-t border-gray-100">
+                  <span className="text-gray-600">Has Diabetes</span>
+                  <span className="font-medium text-gray-900">{userProfile.hasDiabetes ? 'Yes' : 'No'}</span>
+                </div>
+              )}
+              {userProfile.hasHypertension !== undefined && (
+                <div className="flex justify-between items-center py-2 border-t border-gray-100">
+                  <span className="text-gray-600">Has Hypertension</span>
+                  <span className="font-medium text-gray-900">{userProfile.hasHypertension ? 'Yes' : 'No'}</span>
+                </div>
+              )}
+              {userProfile.medicalConditions && userProfile.medicalConditions.length > 0 && (
                 <div className="py-2 border-t border-gray-100">
-                  <span className="text-gray-600 block mb-2">Health Goals</span>
+                  <span className="text-gray-600 block mb-2">Medical Conditions</span>
                   <div className="flex flex-wrap gap-1">
-                    {userProfile.healthGoals.map((goal, index) => (
+                    {userProfile.medicalConditions.map((condition, index) => (
                       <span
                         key={index}
-                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"
                       >
-                        {goal}
+                        {condition}
                       </span>
                     ))}
                   </div>
@@ -623,7 +731,120 @@ export default function Dashboard({ updateAuthState }: DashboardProps) {
           </div>
         </div>
       )}
+      {isCKDModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-gray-900">Complete CKD Profile</h2>
+                <button
+                  onClick={() => setIsCKDModalOpen(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            
+            <form onSubmit={handleCKDSubmit} className="p-6 space-y-6">
+              {/* CKD Stage */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">CKD Stage</label>
+                <select
+                  value={ckdFormData.ckdStage}
+                  onChange={(e) => setCKDFormData(prev => ({ ...prev, ckdStage: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">Select CKD Stage</option>
+                  {ckdStageOptions.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
+              {/* How did you hear about us */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">How did you hear about us?</label>
+                <select
+                  value={ckdFormData.howDidYouHear}
+                  onChange={(e) => setCKDFormData(prev => ({ ...prev, howDidYouHear: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
+                >
+                  <option value="">Select an option</option>
+                  {howDidYouHearOptions.map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Medical Conditions */}
+              <div className="space-y-4">
+                <label className="block text-sm font-medium text-gray-700">Medical Conditions</label>
+                
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="onDialysis"
+                    checked={ckdFormData.onDialysis}
+                    onChange={(e) => setCKDFormData(prev => ({ ...prev, onDialysis: e.target.checked }))}
+                    className="rounded text-blue-600 focus:ring-blue-500"
+                  />
+                  <label htmlFor="onDialysis" className="text-sm text-gray-700">Currently on Dialysis</label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="hasDiabetes"
+                    checked={ckdFormData.hasDiabetes}
+                    onChange={(e) => setCKDFormData(prev => ({ ...prev, hasDiabetes: e.target.checked }))}
+                    className="rounded text-blue-600 focus:ring-blue-500"
+                  />
+                  <label htmlFor="hasDiabetes" className="text-sm text-gray-700">Diagnosed with Diabetes</label>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="hasHypertension"
+                    checked={ckdFormData.hasHypertension}
+                    onChange={(e) => setCKDFormData(prev => ({ ...prev, hasHypertension: e.target.checked }))}
+                    className="rounded text-blue-600 focus:ring-blue-500"
+                  />
+                  <label htmlFor="hasHypertension" className="text-sm text-gray-700">Have Hypertension</label>
+                </div>
+              </div>
+
+              {/* Form Actions */}
+              <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => setIsCKDModalOpen(false)}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdating}
+                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {isUpdating ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}
+                  <span>{isUpdating ? 'Updating...' : 'Save Changes'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
       {/* Logout Button - Fixed Position */}
       <div className="fixed bottom-6 right-6">
         <button

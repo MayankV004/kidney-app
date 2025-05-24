@@ -15,6 +15,7 @@ import {
   ChevronDown,
   RefreshCw,
 } from "lucide-react";
+import Navbar from "../Navbar";
 
 // Types
 interface Nutrients {
@@ -275,6 +276,7 @@ const FoodSearchComponent: React.FC = () => {
     setLoading(false);
   }, [filters]);
 
+
   const handlePageChange = (page: number): void => {
     if (page >= 1 && page <= totalPages) {
       handleSearch(debouncedSearchTerm, page);
@@ -412,6 +414,9 @@ const FoodSearchComponent: React.FC = () => {
     };
 
     return (
+      <>
+   
+      
       <div className="flex justify-center items-center space-x-2 mt-6">
         <button
           onClick={() => handlePageChange(currentPage - 1)}
@@ -443,6 +448,7 @@ const FoodSearchComponent: React.FC = () => {
           Next
         </button>
       </div>
+      </>
     );
   };
 
@@ -799,7 +805,9 @@ const FoodSearchComponent: React.FC = () => {
     </div>
   );
 
-  return (
+ return (
+    <> 
+
     <div className="max-w-6xl mx-auto p-6 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
       {/* Header */}
       <div className="text-center mb-8">
@@ -816,7 +824,7 @@ const FoodSearchComponent: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Search Section */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className={`space-y-6 ${!recentSearches.length && !selectedFood ? 'lg:col-span-3' : 'lg:col-span-2'}`}>
           {/* Search Bar & Buttons */}
           <div className="space-y-4">
             <div className="flex gap-4">
@@ -1037,24 +1045,24 @@ const FoodSearchComponent: React.FC = () => {
               <div className="flex mb-6 bg-gray-100 p-1 rounded-xl">
                 {[
                   {
-                    key: "nutrients" as ActiveView,
+                    key: "nutrients",
                     icon: Zap,
                     label: "Nutrients",
                   },
                   {
-                    key: "serving" as ActiveView,
+                    key: "serving",
                     icon: Scale,
                     label: "Serving",
                   },
                   {
-                    key: "portions" as ActiveView,
+                    key: "portions",
                     icon: Target,
                     label: "Portions",
                   },
                 ].map(({ key, icon: Icon, label }) => (
                   <button
                     key={key}
-                    onClick={() => setActiveView(key)}
+                    onClick={() => setActiveView(key as ActiveView)}
                     className={`flex-1 flex items-center justify-center py-2 px-3 rounded-lg transition-all duration-200 ${
                       activeView === key
                         ? "bg-white shadow-md text-blue-600"
@@ -1081,6 +1089,7 @@ const FoodSearchComponent: React.FC = () => {
       {/* Create Modal */}
       {showCreateModal && renderCreateModal()}
     </div>
+    </>
   );
 };
 

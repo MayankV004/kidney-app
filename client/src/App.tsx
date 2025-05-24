@@ -4,6 +4,9 @@ import Login from './components/Login';
 import Signup from './components/Signup';
 import Dashboard from './components/Dashboard';
 import FoodSearchComponent from './components/food/FoodSearchComponent';
+import Navbar from './components/Navbar';
+import DietChartGenerator from './components/DietChartGenerator';
+
 
 
 export default function App(): JSX.Element {
@@ -28,6 +31,8 @@ export default function App(): JSX.Element {
   }
 
   return (
+  <div>
+    {isAuthenticated && <Navbar />}
     <Routes>
       <Route 
         path="/" 
@@ -49,6 +54,11 @@ export default function App(): JSX.Element {
         path="/food" 
         element={isAuthenticated ? <FoodSearchComponent /> : <Navigate to="/login" />} 
       />
+      <Route 
+        path="/diet-chart" 
+        element={isAuthenticated ? <DietChartGenerator /> : <Navigate to="/login" />} 
+      />
     </Routes>
-  );
+  </div>
+);
 }

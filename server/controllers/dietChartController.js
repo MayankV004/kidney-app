@@ -1,10 +1,11 @@
+import NutrientTarget from '../models/nutrientTarget-model.js';
 import User from '../models/user-model.js'
 
 export const createDietChart = async (req, res) => {
   try {
     const { method, age } = req.body;
     const user = await User.findById(req.user.userId);
-
+    
     let newTargets = {
       protein: 60,
       calories: 2000,
@@ -45,7 +46,7 @@ export const createDietChart = async (req, res) => {
           }
         }
         break;
-
+       
       case "CKD_STAGE":
         if (user?.ckdStage) {
           switch (user.ckdStage) {
@@ -98,18 +99,30 @@ export const createDietChart = async (req, res) => {
         }
         break;
     }
-
-    // Update nutrient targets
-    await NutrientTarget.findOneAndUpdate(
+        
+    // Update nutrient targets and get the updated document
+    const dietChart = await NutrientTarget.findOneAndUpdate(
       { userId: req.user.userId },
       { ...newTargets, updatedAt: new Date() },
-      { upsert: true }
+      { upsert: true, new: true } // new: true returns the updated document
+    );
+
+    // Update user with diet chart reference
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.userId,
+      { 
+        dietChart: dietChart._id,
+        updatedAt: new Date()
+      },
+      { new: true }
     );
 
     res.json({
       message: "Diet chart generated successfully",
       targets: newTargets,
+      dietChartId: dietChart._id
     });
+    
   } catch (error) {
     console.error("Generate diet chart error:", error);
     res.status(500).json({ error: "Internal server error" });

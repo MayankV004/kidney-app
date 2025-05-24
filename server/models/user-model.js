@@ -13,7 +13,8 @@ const userSchema = new mongoose.Schema({
   },
   medicalConditions: [String],
   createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
+  updatedAt: { type: Date, default: Date.now },
+  dietChart:{type:mongoose.Schema.ObjectId,ref:'NutrientTarget'}
 });
 
 const User = mongoose.model('User', userSchema);
