@@ -1,96 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  Search,
-  Clock,
-  X,
-  Zap,
-  Scale,
-  Target,  // Make sure this is included
-  ChevronRight,
-  Sparkles,
-  Plus,
-  Save,
-  AlertCircle,
-  Filter,
-  ChevronDown,
-  RefreshCw,
-} from "lucide-react";
-
-// Types
-interface Meal {
-  _id: string;
-  name: string;
-  timeOfDay: string;
-  waterIntake: number;
-  foods: Array<{
-    food: Food;
-    quantity: number;
-  }>;
-  createdAt: Date;
-}
-
-interface CreateMealData {
-  name: string;
-  timeOfDay: string;
-  waterIntake: number;
-}
-interface Nutrients {
-  protein: number;
-  calories: number;
-  carbohydrates: number;
-  fats: number;
-  potassium: number;
-  phosphorus: number;
-  sodium: number;
-  calcium: number;
-  magnesium: number;
-  water: number;
-}
-
-interface Food {
-  _id: string;
-  name: string;
-  category:
-    | "VEGETABLES"
-    | "FRUITS"
-    | "GRAINS"
-    | "PROTEIN"
-    | "DAIRY"
-    | "BEVERAGES"
-    | "SNACKS"
-    | "OTHER";
-  servingSize: number;
-  servingSizeUnit: string;
-  nutrients: Nutrients;
-  isKidneyFriendly: boolean;
-  createdAt: Date;
-}
-
-interface SearchResponse {
-  foods: Food[];
-  totalPages: number;
-  currentPage: number;
-  total: number;
-}
-
-interface CreateFoodData {
-  name: string;
-  category: Food["category"];
-  servingSize: number;
-  servingSizeUnit: string;
-  nutrients: Nutrients;
-  isKidneyFriendly: boolean;
-}
+import {Search,Clock,X,Zap,Scale,Target, ChevronRight,Sparkles,Plus,Save,AlertCircle,Filter,ChevronDown,RefreshCw,} from "lucide-react";
+import { Meal ,CreateMealData,Nutrients,Food,SearchResponse,CreateFoodData,SearchFilters} from './food-types.ts'
 
 type ActiveView = "nutrients" | "serving" | "portions";
-
-interface SearchFilters {
-  category: string;
-  kidneyFriendly: boolean | null;
-  sortBy: "name" | "calories" | "protein";
-  sortOrder: "asc" | "desc";
-}
-
 // Debounce hook
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
@@ -107,6 +19,33 @@ function useDebounce<T>(value: T, delay: number): T {
 
   return debouncedValue;
 }
+
+//add meal to daily intake
+const addMealToDailyIntake = async (mealId: string) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await fetch("http://localhost:5000/api/daily-intake", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        mealId,
+        date: new Date().toISOString().split("T")[0], // Today's date
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to add meal to daily intake");
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error("Error adding meal to daily intake:", error);
+    // Don't throw error to prevent breaking the meal creation flow
+  }
+};
 
 // API functions
 const searchFoods = async (
@@ -189,6 +128,7 @@ const searchFoods = async (
     };
   }
 };
+
 
 const createFood = async (foodData: CreateFoodData): Promise<Food> => {
   const token = localStorage.getItem("token");
@@ -351,7 +291,9 @@ const FoodSearchComponent: React.FC = () => {
       throw new Error("Failed to add food to meal");
     }
 
-    return response.json();
+    const result=await response.json()
+    await addMealToDailyIntake(result.meal._id);
+    return result;
   };
 
   useEffect(() => {
@@ -405,7 +347,7 @@ const FoodSearchComponent: React.FC = () => {
     }
   };
 
-  //
+  
 
   const handlePageChange = (page: number): void => {
     if (page >= 1 && page <= totalPages) {
@@ -542,6 +484,8 @@ const FoodSearchComponent: React.FC = () => {
 
       return pages;
     };
+
+
 
     return (
       <>
@@ -1399,24 +1343,6 @@ const FoodSearchComponent: React.FC = () => {
                   </div>
                 </div>
               )}
-
-            {/* Empty State */}
-            {/* {!loading &&
-              !searchTerm &&
-              !filters.category &&
-              foods.length === 0 && (
-                <div className="text-center py-12">
-                  <div className="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-lg border border-gray-200">
-                    <Sparkles className="w-16 h-16 text-blue-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                      Start exploring foods
-                    </h3>
-                    <p className="text-gray-600">
-                      Search for foods or browse by category to get started
-                    </p>
-                  </div>
-                </div>
-              )} */}
           </div>
 
           {/* Sidebar */}

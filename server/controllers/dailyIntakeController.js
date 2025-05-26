@@ -1,5 +1,5 @@
 import DailyIntake from "../models/dailyIntake-model.js";
-
+import Meal from "../models/meal-model.js"; 
 export const getDailyIntake = async (req, res) => {
   try {
     const { date, startDate, endDate } = req.query;
