@@ -1,49 +1,123 @@
 import React, { useState, useEffect } from 'react';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, TooltipProps,ResponsiveContainer, Legend } from 'recharts';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { AlertTriangle, Target, TrendingUp, Calendar } from 'lucide-react';
+
+interface DailyIntake {
+  _id: string;
+  userId: string;
+  date: string;
+  meals: any[];
+  totalNutrients: {
+    protein: number;
+    calories: number;
+    carbohydrates: number;
+    fats: number;
+    potassium: number;
+    phosphorus: number;
+    sodium: number;
+    calcium: number;
+    magnesium: number;
+    water: number;
+  };
+  createdAt: string;
+}
+
+interface NutrientTargets {
+  _id: string;
+  userId: string;
+  protein: number;
+  calories: number;
+  carbohydrates: number;
+  fats: number;
+  potassium: number;
+  phosphorus: number;
+  sodium: number;
+  calcium: number;
+  magnesium: number;
+  water: number;
+  updatedAt: string;
+}
+
+interface NutrientData {
+  name: string;
+  consumed: number;
+  target: number;
+  remaining: number;
+  percentage: number;
+  exceeded: boolean;
+  unit: string;
+}
 
 const NutrientDashboard = () => {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [dailyIntake, setDailyIntake] = useState(null);
-  const [nutrientTargets, setNutrientTargets] = useState(null);
+  const [dailyIntake, setDailyIntake] = useState<DailyIntake | null>(null);
+  const [nutrientTargets, setNutrientTargets] = useState<NutrientTargets | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  
-
   useEffect(() => {
-    // Simulate API calls
     const fetchData = async () => {
       try {
-    const token = localStorage.getItem("token");
+        const token = localStorage.getItem("token");
+        
+        if (!token) {
+          setError('Authentication token not found');
+          return;
+        }
 
         setLoading(true);
-        // In real implementation, replace with actual API calls:
+        setError(null);
+
+        // Fetch daily intake for specific date
         const intakeResponse = await fetch(`http://localhost:5000/api/daily-intake?date=${selectedDate}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        // Fetch nutrient targets
         const targetsResponse = await fetch(`http://localhost:5000/api/nutrient-targets`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-        
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        const intake=await intakeResponse.json()
-        console.log(intake);
-        
-        const target=await targetsResponse.json()
-        console.log(target);
-        setDailyIntake(intake);
-        setNutrientTargets(target);
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!intakeResponse.ok || !targetsResponse.ok) {
+          throw new Error('Failed to fetch data from server');
+        }
+
+        const intakeData = await intakeResponse.json();
+        const targetData = await targetsResponse.json();
+
+        console.log('Intake Data:', intakeData);
+        console.log('Target Data:', targetData);
+
+        // Daily intake API returns an array, we need the first item for the specific date
+        // If no data exists for the date, create empty nutrient object
+        const todaysIntake = Array.isArray(intakeData) && intakeData.length > 0 
+          ? intakeData[0] 
+          : {
+              totalNutrients: {
+                protein: 0,
+                calories: 0,
+                carbohydrates: 0,
+                fats: 0,
+                potassium: 0,
+                phosphorus: 0,
+                sodium: 0,
+                calcium: 0,
+                magnesium: 0,
+                water: 0,
+              }
+            };
+
+        setDailyIntake(todaysIntake);
+        setNutrientTargets(targetData);
       } catch (err) {
-        setError('Failed to load data');
+        console.error('Fetch error:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load data');
       } finally {
         setLoading(false);
       }
@@ -64,49 +138,25 @@ const NutrientDashboard = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 flex items-center justify-center">
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-800">
-          {error}
+          <h3 className="font-semibold mb-2">Error Loading Data</h3>
+          <p>{error}</p>
         </div>
       </div>
     );
   }
 
-  const calculateNutrientData = () => {
-    const nutrients = Object.keys(nutrientTargets|| {});
-    return nutrients.map(nutrient => {
-      const consumed = dailyIntake?.totalNutrients?.[nutrient] || 0;
-      const target = nutrientTargets[nutrient];
-      const percentage = Math.round((consumed / target) * 100);
-      const remaining = Math.max(0, target - consumed);
-      const exceeded = consumed > target;
+  if (!nutrientTargets || !dailyIntake) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6 flex items-center justify-center">
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-yellow-800">
+          <p>No data available for the selected date.</p>
+        </div>
+      </div>
+    );
+  }
 
-      return {
-        name: nutrient.charAt(0).toUpperCase() + nutrient.slice(1),
-        consumed,
-        target,
-        remaining,
-        percentage,
-        exceeded,
-        unit: getNutrientUnit(nutrient)
-      };
-    });
-  };
-
-  const nutrientKeys = [
-    'protein',
-    'calories',
-    'carbohydrates',
-    'fats',
-    'potassium',
-    'phosphorus',
-    'sodium',
-    'calcium',
-    'magnesium',
-    'water'
-  ] as const;
-  type NutrientKey = typeof nutrientKeys[number];
-
-  const getNutrientUnit = (nutrient: string) => {
-    const units: Record<NutrientKey, string> = {
+  const getNutrientUnit = (nutrient: string): string => {
+    const units: Record<string, string> = {
       protein: 'g',
       calories: 'kcal',
       carbohydrates: 'g',
@@ -118,7 +168,29 @@ const NutrientDashboard = () => {
       magnesium: 'mg',
       water: 'ml'
     };
-    return units[nutrient as NutrientKey] || '';
+    return units[nutrient] || '';
+  };
+
+  const calculateNutrientData = (): NutrientData[] => {
+    const nutrients = ['protein', 'calories', 'carbohydrates', 'fats', 'potassium', 'phosphorus', 'sodium', 'calcium', 'magnesium', 'water'];
+    
+    return nutrients.map(nutrient => {
+      const consumed = dailyIntake?.totalNutrients?.[nutrient as keyof typeof dailyIntake.totalNutrients] || 0;
+      const target = nutrientTargets[nutrient as keyof NutrientTargets] as number || 1;
+      const percentage = Math.round((consumed / target) * 100);
+      const remaining = Math.max(0, target - consumed);
+      const exceeded = consumed > target;
+
+      return {
+        name: nutrient.charAt(0).toUpperCase() + nutrient.slice(1),
+        consumed: Math.round(consumed * 100) / 100, // Round to 2 decimal places
+        target,
+        remaining: Math.round(remaining * 100) / 100,
+        percentage,
+        exceeded,
+        unit: getNutrientUnit(nutrient)
+      };
+    });
   };
 
   const nutrientData = calculateNutrientData();
@@ -133,15 +205,15 @@ const NutrientDashboard = () => {
 
   const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#84CC16', '#F97316', '#EC4899', '#6366F1'];
 
-  const CustomTooltip = ({ active, payload, label }: TooltipProps<any, any>) => {
+  const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
         <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
-          <p className="font-semibold">{`${data.name}`}</p>
-          <p className="text-blue-600">{`Consumed: ${data.consumed} ${data.unit}`}</p>
-          <p className="text-gray-600">{`Target: ${data.target} ${data.unit}`}</p>
-          <p className="text-green-600">{`Progress: ${data.percentage}%`}</p>
+          <p className="font-semibold">{data.name}</p>
+          <p className="text-blue-600">Consumed: {data.consumed} {data.unit}</p>
+          <p className="text-gray-600">Target: {data.target} {data.unit}</p>
+          <p className="text-green-600">Progress: {data.percentage}%</p>
         </div>
       );
     }
@@ -243,7 +315,7 @@ const NutrientDashboard = () => {
 
         {/* Detailed Nutrient Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-          {nutrientData.map((nutrient, index) => (
+          {nutrientData.map((nutrient) => (
             <div
               key={nutrient.name}
               className={`bg-white rounded-xl shadow-lg p-4 border-l-4 ${
@@ -294,7 +366,7 @@ const NutrientDashboard = () => {
               
               {nutrient.exceeded && (
                 <p className="text-xs text-red-600 font-medium">
-                  Exceeded by: {nutrient.consumed - nutrient.target} {nutrient.unit}
+                  Exceeded by: {Math.round((nutrient.consumed - nutrient.target) * 100) / 100} {nutrient.unit}
                 </p>
               )}
             </div>
