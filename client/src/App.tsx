@@ -7,6 +7,7 @@ import FoodSearchComponent from './components/food/FoodSearchComponent';
 import Navbar from './components/Navbar';
 import DietChartGenerator from './components/DietChartGenerator';
 import NutrientDashboard from './components/NutrientDashboard';
+import FavouriteFoodComponent from './components/favouriteFood/FavouriteFoodComponent';
 
 
 
@@ -62,6 +63,10 @@ export default function App(): JSX.Element {
        <Route 
         path="/daily-total" 
         element={isAuthenticated ?<NutrientDashboard/> : <Navigate to="/login" />} 
+      />
+      <Route 
+        path="/favourite-food" 
+        element={isAuthenticated ?<FavouriteFoodComponent/> : <Navigate to="/login" />} 
       />
     </Routes>
   </div>
