@@ -192,6 +192,31 @@ const FoodSearchComponent: React.FC = () => {
   // Debounced search term
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
+const fetchFavoriteFoods = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await fetch("http://localhost:5000/api/user/favorites", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch favorites");
+    }
+
+    const result = await response.json();
+    // Assuming the backend returns an array of favorite food objects with foodId
+    const favoriteIds = result.favorites?.map((fav: any) => fav.foodId) || [];
+    setFavoriteFoods(favoriteIds);
+    return favoriteIds;
+  } catch (error) {
+    console.error("Error fetching favorites:", error);
+    return [];
+  }
+};
 
 const toggleFavoriteFood = async (foodId: string) => {
   try {
@@ -199,7 +224,7 @@ const toggleFavoriteFood = async (foodId: string) => {
     const response = await fetch("http://localhost:5000/api/user/favorites", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",  
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ foodId }),
@@ -210,21 +235,25 @@ const toggleFavoriteFood = async (foodId: string) => {
     }
 
     const result = await response.json();
-    
-    // Update local state immediately without affecting search results
-    setFavoriteFoods(prev => 
-      prev.includes(foodId) 
-        ? prev.filter(id => id !== foodId)
-        : [...prev, foodId]
-    );
-    
+    console.log("FOOD", result);
+
+    // Update local state immediately based on the action
+    setFavoriteFoods(prev => {
+      const isCurrentlyFavorite = prev.includes(foodId);
+      if (isCurrentlyFavorite) {
+        return prev.filter(id => id !== foodId);
+      } else {
+        return [...prev, foodId];
+      }
+    });
+
     return result;
   } catch (error) {
     console.error("Error toggling favorite:", error);
-    // Don't throw error to prevent breaking the UI
     return null;
   }
 };
+
 
 // 4. Add API function to fetch favorite foods
 const getFavoriteFoods = async () => {
@@ -256,22 +285,35 @@ useEffect(() => {
 
 // 6. Add handler function for favorite toggle
 const handleFavoriteToggle = async (e: React.MouseEvent, foodId: string) => {
-  e.stopPropagation(); // Prevent triggering food click
-  e.preventDefault();  // Prevent any default behavior
-  
-  // Store the current search state
+  e.stopPropagation();
+  e.preventDefault();
+
   const currentFoods = [...foods];
   const currentSearchTerm = searchTerm;
   const currentFilters = { ...filters };
-  
+
   await toggleFavoriteFood(foodId);
-  
+
   // Ensure search results remain intact
-  // Only re-search if the foods array was somehow cleared
   if (foods.length === 0 && currentFoods.length > 0) {
     setFoods(currentFoods);
   }
 };
+
+useEffect(() => {
+  // Load favorite foods when component mounts
+  fetchFavoriteFoods();
+}, []);
+
+useEffect(() => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    fetchFavoriteFoods();
+  } else {
+    setFavoriteFoods([]); // Clear favorites if no token
+  }
+}, [/* add dependency for login state if you have one */]);
+
 useEffect(() => {
   handleSearch(debouncedSearchTerm, 1);
 }, [debouncedSearchTerm, filters.category, filters.kidneyFriendly, filters.sortBy, filters.sortOrder]);

@@ -64,7 +64,7 @@ const FavouriteFoodComponent: React.FC = () => {
         },
       });
 
-      console.log(response);
+      // console.log(response);
       if (!response.ok) {
         if (response.status === 401) {
           handleLogout();
@@ -74,7 +74,7 @@ const FavouriteFoodComponent: React.FC = () => {
       }
 
       const userData: UserProfile = await response.json();
-      console.log(userData);
+      // console.log(userData);
       return userData;
     } catch (error) {
       console.error('Error fetching user profile:', error);
