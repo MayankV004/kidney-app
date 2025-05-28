@@ -170,3 +170,18 @@ export   const addFoodToMeal = async (
     await addMealToDailyIntake(result.meal._id);
     return result;
   };
+
+
+    export const getCategoryColor = (category: Food["category"]): string => {
+    const colors: Record<Food["category"], string> = {
+      VEGETABLES: "from-green-400 to-emerald-500",
+      FRUITS: "from-orange-400 to-red-500",
+      GRAINS: "from-yellow-400 to-orange-500",
+      PROTEIN: "from-purple-400 to-pink-500",
+      DAIRY: "from-blue-400 to-cyan-500",
+      BEVERAGES: "from-cyan-400 to-blue-500",
+      SNACKS: "from-pink-400 to-rose-500",
+      OTHER: "from-gray-400 to-slate-500",
+    };
+    return colors[category];
+  };

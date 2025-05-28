@@ -1,7 +1,38 @@
 import React, { useState, useEffect, useCallback } from "react";
-import {Search,Clock,X,Zap,Scale,Target, ChevronRight,Sparkles,Plus,Save,AlertCircle,Filter,ChevronDown,RefreshCw,Heart} from "lucide-react";
-import { Meal ,CreateMealData,Nutrients,Food,SearchResponse,CreateFoodData,SearchFilters} from './food-types.ts'
-import { addMealToDailyIntake,searchFoods,createFood,getMeals,addFoodToMeal } from "../../utils/FoodSearchUtils.ts";
+import {
+  Search,
+  Clock,
+  X,
+  Zap,
+  Scale,
+  Target,
+  ChevronRight,
+  Sparkles,
+  Plus,
+  Save,
+  AlertCircle,
+  Filter,
+  ChevronDown,
+  RefreshCw,
+  Heart,
+} from "lucide-react";
+import {
+  Meal,
+  CreateMealData,
+  Nutrients,
+  Food,
+  SearchResponse,
+  CreateFoodData,
+  SearchFilters,
+} from "./food-types.ts";
+import {
+  addMealToDailyIntake,
+  searchFoods,
+  createFood,
+  getMeals,
+  addFoodToMeal,
+  getCategoryColor,
+} from "../../utils/FoodSearchUtils.ts";
 type ActiveView = "nutrients" | "serving" | "portions";
 // Debounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -19,13 +50,6 @@ function useDebounce<T>(value: T, delay: number): T {
 
   return debouncedValue;
 }
-
-
-
-
-
-
-
 const FoodSearchComponent: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [foods, setFoods] = useState<Food[]>([]);
@@ -38,7 +62,6 @@ const FoodSearchComponent: React.FC = () => {
   const [createError, setCreateError] = useState<string>("");
   const [showFilters, setShowFilters] = useState<boolean>(false);
   const [favoriteFoods, setFavoriteFoods] = useState<string[]>([]);
-
   const [meals, setMeals] = useState<Meal[]>([]);
   const [showMealModal, setShowMealModal] = useState<boolean>(false);
   const [showCreateMealModal, setShowCreateMealModal] =
@@ -70,93 +93,100 @@ const FoodSearchComponent: React.FC = () => {
   // Debounced search term
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-const fetchFavoriteFoods = async () => {
-  try {
-    const token = localStorage.getItem("token");
-    const response = await fetch("http://localhost:5000/api/user/favorites", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
+  const fetchFavoriteFoods = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:5000/api/user/favorites", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    if (!response.ok) {
-      throw new Error("Failed to fetch favorites");
-    }
-
-    const result = await response.json();
-    // Assuming the backend returns an array of favorite food objects with foodId
-    const favoriteIds = result.favorites?.map((fav: any) => fav.foodId) || [];
-    setFavoriteFoods(favoriteIds);
-    return favoriteIds;
-  } catch (error) {
-    console.error("Error fetching favorites:", error);
-    return [];
-  }
-};
-
-const toggleFavoriteFood = async (foodId: string) => {
-  try {
-    const token = localStorage.getItem("token");
-    const response = await fetch("http://localhost:5000/api/user/favorites", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ foodId }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to toggle favorite");
-    }
-
-    const result = await response.json();
-    console.log("FOOD", result);
-
-    // Update local state immediately based on the action
-    setFavoriteFoods(prev => {
-      const isCurrentlyFavorite = prev.includes(foodId);
-      if (isCurrentlyFavorite) {
-        return prev.filter(id => id !== foodId);
-      } else {
-        return [...prev, foodId];
+      if (!response.ok) {
+        throw new Error("Failed to fetch favorites");
       }
-    });
 
-    return result;
-  } catch (error) {
-    console.error("Error toggling favorite:", error);
-    return null;
-  }
-};
+      const result = await response.json();
+      console.log(result);
+      const favoriteIds = result.map((fav: Food) => fav._id) || [];
+      setFavoriteFoods(favoriteIds);
+      console.log(favoriteIds);
+      
+      return favoriteIds;
+    } catch (error) {
+      console.error("Error fetching favorites:", error);
+      return [];
+    }
+  };
 
-const handleFavoriteToggle = async (e: React.MouseEvent, foodId: string) => {
-  e.stopPropagation();
-  e.preventDefault();
+  const toggleFavoriteFood = async (foodId: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:5000/api/user/favorites", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ foodId }),
+      });
 
-  const currentFoods = [...foods];
-  await toggleFavoriteFood(foodId);
+      if (!response.ok) {
+        throw new Error("Failed to toggle favorite");
+      }
 
-  if (foods.length === 0 && currentFoods.length > 0) {
-    setFoods(currentFoods);
-  }
-};
+      const result = await response.json();
+      console.log("FOOD", result);
 
-useEffect(() => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    fetchFavoriteFoods();
-  } else {
-    setFavoriteFoods([]); 
-  }
-}, []);
+      // Update local state immediately based on the action
+      setFavoriteFoods((prev) => {
+        const isCurrentlyFavorite = prev.includes(foodId);
+        if (isCurrentlyFavorite) {
+          return prev.filter((id) => id !== foodId);
+        } else {
+          return [...prev, foodId];
+        }
+      });
 
-useEffect(() => {
-  handleSearch(debouncedSearchTerm, 1);
-}, [debouncedSearchTerm, filters.category, filters.kidneyFriendly, filters.sortBy, filters.sortOrder]);
+      return result;
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+      return null;
+    }
+  };
 
+  const handleFavoriteToggle = async (e: React.MouseEvent, foodId: string) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    const currentFoods = [...foods];
+    await toggleFavoriteFood(foodId);
+
+    if (foods.length === 0 && currentFoods.length > 0) {
+      setFoods(currentFoods);
+    }
+  };
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      fetchFavoriteFoods();
+    } else {
+      setFavoriteFoods([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    handleSearch(debouncedSearchTerm, 1);
+  }, [
+    debouncedSearchTerm,
+    filters.category,
+    filters.kidneyFriendly,
+    filters.sortBy,
+    filters.sortOrder,
+  ]);
 
   const [formData, setFormData] = useState<CreateFoodData>({
     name: "",
@@ -211,10 +241,6 @@ useEffect(() => {
     },
     [filters]
   );
-  //meals
-
-
-
   useEffect(() => {
     const fetchMeals = async () => {
       try {
@@ -228,7 +254,6 @@ useEffect(() => {
     fetchMeals();
   }, []);
 
-  // Add these handler functions
   const handleAddToMeal = (food: Food) => {
     setSelectedFoodForMeal(food);
     setQuantity(1);
@@ -265,9 +290,6 @@ useEffect(() => {
       console.error("Error adding food to meal:", error);
     }
   };
-
-  
-
   const handlePageChange = (page: number): void => {
     if (page >= 1 && page <= totalPages) {
       handleSearch(debouncedSearchTerm, page);
@@ -310,20 +332,6 @@ useEffect(() => {
   ): void => {
     setFilters((prev) => ({ ...prev, [key]: value }));
     setCurrentPage(1);
-  };
-
-  const getCategoryColor = (category: Food["category"]): string => {
-    const colors: Record<Food["category"], string> = {
-      VEGETABLES: "from-green-400 to-emerald-500",
-      FRUITS: "from-orange-400 to-red-500",
-      GRAINS: "from-yellow-400 to-orange-500",
-      PROTEIN: "from-purple-400 to-pink-500",
-      DAIRY: "from-blue-400 to-cyan-500",
-      BEVERAGES: "from-cyan-400 to-blue-500",
-      SNACKS: "from-pink-400 to-rose-500",
-      OTHER: "from-gray-400 to-slate-500",
-    };
-    return colors[category];
   };
 
   const handleCreateFood = async (): Promise<void> => {
@@ -403,8 +411,6 @@ useEffect(() => {
 
       return pages;
     };
-
-
 
     return (
       <>
@@ -813,7 +819,7 @@ useEffect(() => {
       </div>
     </div>
   );
-  //meal model
+
   const renderMealSelectionModal = (): JSX.Element => (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
@@ -1178,78 +1184,80 @@ useEffect(() => {
             {/* Search Results */}
             {!loading && foods.length > 0 && (
               <div className="space-y-4">
-               {foods.map((food) => (
-  <div
-    key={food._id}
-    className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-blue-300"
-  >
-    <div className="flex justify-between items-start">
-      <div
-        className="flex-1 cursor-pointer"
-        onClick={() => handleFoodClick(food)}
-      >
-        <div className="flex items-start justify-between mb-2">
-          <h3 className="text-xl font-bold text-gray-800 flex-1">
-            {food.name}
-          </h3>
-          <button
-            onClick={(e) => handleFavoriteToggle(e, food._id)}
-            className={`ml-2 p-2 rounded-full transition-all duration-200 hover:scale-110 ${
-              favoriteFoods.includes(food._id)
-                ? "text-red-500 hover:text-red-600"
-                : "text-gray-400 hover:text-red-500"
-            }`}
-          >
-            <Heart
-              className={`w-5 h-5 ${
-                favoriteFoods.includes(food._id) ? "fill-current" : ""
-              }`}
-            />
-          </button>
-        </div>
-        <div
-          className={`inline-block px-3 py-1 rounded-full text-white text-sm font-medium bg-gradient-to-r ${getCategoryColor(
-            food.category
-          )}`}
-        >
-          {food.category}
-        </div>
-        <div className="mt-3 flex items-center space-x-4 text-sm text-gray-600">
-          <span className="flex items-center">
-            <Zap className="w-4 h-4 mr-1" />
-            {food.nutrients.calories} cal
-          </span>
-          <span className="flex items-center">
-            <Scale className="w-4 h-4 mr-1" />
-            {food.servingSize}
-            {food.servingSizeUnit}
-          </span>
-          {food.isKidneyFriendly && (
-            <span className="text-green-600 font-medium flex items-center">
-              <Target className="w-4 h-4 mr-1" />
-              Kidney Friendly
-            </span>
-          )}
-        </div>
-        <div className="mt-2 text-xs text-gray-500">
-          Protein: {food.nutrients.protein}mg • Sodium:{" "}
-          {food.nutrients.sodium}mg • Potassium:{" "}
-          {food.nutrients.potassium}mg
-        </div>
-      </div>
-      <div className="flex flex-col space-y-2">
-        <button
-          onClick={() => handleAddToMeal(food)}
-          className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 flex items-center text-sm font-medium"
-        >
-          <Plus className="w-4 h-4 mr-1" />
-          Add to Meal
-        </button>
-        <ChevronRight className="w-6 h-6 text-gray-400 self-center" />
-      </div>
-    </div>
-  </div>
-))}
+                {foods.map((food) => (
+                  <div
+                    key={food._id}
+                    className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-blue-300"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div
+                        className="flex-1 cursor-pointer"
+                        onClick={() => handleFoodClick(food)}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <h3 className="text-xl font-bold text-gray-800 flex-1">
+                            {food.name}
+                          </h3>
+                          <button
+                            onClick={(e) => handleFavoriteToggle(e, food._id)}
+                            className={`ml-2 p-2 rounded-full transition-all duration-200 hover:scale-110 ${
+                              favoriteFoods.includes(food._id)
+                                ? "text-red-500 hover:text-red-600"
+                                : "text-gray-400 hover:text-red-500"
+                            }`}
+                          >
+                            <Heart
+                              className={`w-5 h-5 ${
+                                favoriteFoods.includes(food._id)
+                                  ? "fill-current"
+                                  : ""
+                              }`}
+                            />
+                          </button>
+                        </div>
+                        <div
+                          className={`inline-block px-3 py-1 rounded-full text-white text-sm font-medium bg-gradient-to-r ${getCategoryColor(
+                            food.category
+                          )}`}
+                        >
+                          {food.category}
+                        </div>
+                        <div className="mt-3 flex items-center space-x-4 text-sm text-gray-600">
+                          <span className="flex items-center">
+                            <Zap className="w-4 h-4 mr-1" />
+                            {food.nutrients.calories} cal
+                          </span>
+                          <span className="flex items-center">
+                            <Scale className="w-4 h-4 mr-1" />
+                            {food.servingSize}
+                            {food.servingSizeUnit}
+                          </span>
+                          {food.isKidneyFriendly && (
+                            <span className="text-green-600 font-medium flex items-center">
+                              <Target className="w-4 h-4 mr-1" />
+                              Kidney Friendly
+                            </span>
+                          )}
+                        </div>
+                        <div className="mt-2 text-xs text-gray-500">
+                          Protein: {food.nutrients.protein}mg • Sodium:{" "}
+                          {food.nutrients.sodium}mg • Potassium:{" "}
+                          {food.nutrients.potassium}mg
+                        </div>
+                      </div>
+                      <div className="flex flex-col space-y-2">
+                        <button
+                          onClick={() => handleAddToMeal(food)}
+                          className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 flex items-center text-sm font-medium"
+                        >
+                          <Plus className="w-4 h-4 mr-1" />
+                          Add to Meal
+                        </button>
+                        <ChevronRight className="w-6 h-6 text-gray-400 self-center" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
 
                 {/* Pagination */}
                 {renderPagination()}
@@ -1298,42 +1306,47 @@ useEffect(() => {
                   </button>
                 </div>
                 <div className="space-y-2">
-              {recentSearches.map((food) => (
-  <div
-    key={food._id}
-    className="p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-200 border border-transparent hover:border-gray-200"
-  >
-    <div className="flex items-start justify-between">
-      <div className="flex-1" onClick={() => handleFoodClick(food)}>
-        <div className="font-medium text-gray-800">
-          {food.name}
-        </div>
-        <div className="text-sm text-gray-500 flex items-center mt-1">
-          <span
-            className={`inline-block w-2 h-2 rounded-full mr-2 bg-gradient-to-r ${getCategoryColor(
-              food.category
-            )}`}
-          ></span>
-          {food.category} • {food.nutrients.calories} cal
-        </div>
-      </div>
-      <button
-        onClick={(e) => handleFavoriteToggle(e, food._id)}
-        className={`p-1 rounded-full transition-all duration-200 hover:scale-110 ${
-          favoriteFoods.includes(food._id)
-            ? "text-red-500 hover:text-red-600"
-            : "text-gray-400 hover:text-red-500"
-        }`}
-      >
-        <Heart
-          className={`w-4 h-4 ${
-            favoriteFoods.includes(food._id) ? "fill-current" : ""
-          }`}
-        />
-      </button>
-    </div>
-  </div>
-))}
+                  {recentSearches.map((food) => (
+                    <div
+                      key={food._id}
+                      className="p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-200 border border-transparent hover:border-gray-200"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div
+                          className="flex-1"
+                          onClick={() => handleFoodClick(food)}
+                        >
+                          <div className="font-medium text-gray-800">
+                            {food.name}
+                          </div>
+                          <div className="text-sm text-gray-500 flex items-center mt-1">
+                            <span
+                              className={`inline-block w-2 h-2 rounded-full mr-2 bg-gradient-to-r ${getCategoryColor(
+                                food.category
+                              )}`}
+                            ></span>
+                            {food.category} • {food.nutrients.calories} cal
+                          </div>
+                        </div>
+                        <button
+                          onClick={(e) => handleFavoriteToggle(e, food._id)}
+                          className={`p-1 rounded-full transition-all duration-200 hover:scale-110 ${
+                            favoriteFoods.includes(food._id)
+                              ? "text-red-500 hover:text-red-600"
+                              : "text-gray-400 hover:text-red-500"
+                          }`}
+                        >
+                          <Heart
+                            className={`w-4 h-4 ${
+                              favoriteFoods.includes(food._id)
+                                ? "fill-current"
+                                : ""
+                            }`}
+                          />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
