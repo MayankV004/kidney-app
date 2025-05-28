@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LogOut, User, Home, Settings, Bell, AlertCircle, Edit3, X, Save, ChevronRight, FileText, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from './Navbar';
+import Navbar from '../Navbar/Navbar';
 
 interface DashboardProps {
   updateAuthState: (authenticated: boolean) => void;

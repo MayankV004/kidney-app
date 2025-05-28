@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {Search,Clock,X,Zap,Scale,Target, ChevronRight,Sparkles,Plus,Save,AlertCircle,Filter,ChevronDown,RefreshCw,Heart} from "lucide-react";
 import { Meal ,CreateMealData,Nutrients,Food,SearchResponse,CreateFoodData,SearchFilters} from './food-types.ts'
-
+import { addMealToDailyIntake,searchFoods,createFood,getMeals,addFoodToMeal } from "../../utils/FoodSearchUtils.ts";
 type ActiveView = "nutrients" | "serving" | "portions";
 // Debounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -20,133 +20,11 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-//add meal to daily intake
-const addMealToDailyIntake = async (mealId: string) => {
-  try {
-    const token = localStorage.getItem("token");
-    const response = await fetch("http://localhost:5000/api/daily-intake", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        mealId,
-        date: new Date().toISOString().split("T")[0], // Today's date
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to add meal to daily intake");
-    }
-
-    return response.json();
-  } catch (error) {
-    console.error("Error adding meal to daily intake:", error);
-    // Don't throw error to prevent breaking the meal creation flow
-  }
-};
-
-// API functions
-const searchFoods = async (
-  query: string,
-  filters: SearchFilters,
-  page: number = 1
-): Promise<SearchResponse> => {
-  try {
-    const params = new URLSearchParams();
-
-    if (query.trim()) {
-      params.append("search", query.trim());
-    }
-
-    if (filters.category) {
-      params.append("category", filters.category);
-    }
-
-    params.append("page", page.toString());
-    params.append("limit", "10");
-
-    const token = localStorage.getItem("token");
-    const response = await fetch(`http://localhost:5000/api/foods?${params}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    // Client-side filtering for kidney friendly (if your backend doesn't support it)
-    let filteredFoods = data.foods;
-    if (filters.kidneyFriendly !== null) {
-      filteredFoods = filteredFoods.filter(
-        (food: Food) => food.isKidneyFriendly === filters.kidneyFriendly
-      );
-    }
-
-    // Client-side sorting
-    filteredFoods.sort((a: Food, b: Food) => {
-      let aValue: number | string;
-      let bValue: number | string;
-
-      switch (filters.sortBy) {
-        case "calories":
-          aValue = a.nutrients.calories;
-          bValue = b.nutrients.calories;
-          break;
-        case "protein":
-          aValue = a.nutrients.protein;
-          bValue = b.nutrients.protein;
-          break;
-        default:
-          aValue = a.name.toLowerCase();
-          bValue = b.name.toLowerCase();
-      }
-
-      if (filters.sortOrder === "desc") {
-        return aValue < bValue ? 1 : -1;
-      }
-      return aValue > bValue ? 1 : -1;
-    });
-
-    return {
-      ...data,
-      foods: filteredFoods,
-    };
-  } catch (error) {
-    console.error("Search error:", error);
-    return {
-      foods: [],
-      totalPages: 0,
-      currentPage: 1,
-      total: 0,
-    };
-  }
-};
 
 
-const createFood = async (foodData: CreateFoodData): Promise<Food> => {
-  const token = localStorage.getItem("token");
-  const response = await fetch("http://localhost:5000/api/foods", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(foodData),
-  });
 
-  if (!response.ok) {
-    throw new Error("Failed to create food");
-  }
 
-  return response.json();
-};
+
 
 const FoodSearchComponent: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -254,65 +132,26 @@ const toggleFavoriteFood = async (foodId: string) => {
   }
 };
 
-
-// 4. Add API function to fetch favorite foods
-const getFavoriteFoods = async () => {
-  try {
-    const token = localStorage.getItem("token");
-    const response = await fetch("http://localhost:5000/api/user/favorites", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch favorites");
-    }
-
-    const favorites = await response.json();
-    setFavoriteFoods(favorites.map((fav: any) => fav.foodId));
-  } catch (error) {
-    console.error("Error fetching favorites:", error);
-  }
-};
-
-// 5. Add useEffect to fetch favorites on component mount (add this after existing useEffects)
-useEffect(() => {
-  getFavoriteFoods();
-}, []);
-
-// 6. Add handler function for favorite toggle
 const handleFavoriteToggle = async (e: React.MouseEvent, foodId: string) => {
   e.stopPropagation();
   e.preventDefault();
 
   const currentFoods = [...foods];
-  const currentSearchTerm = searchTerm;
-  const currentFilters = { ...filters };
-
   await toggleFavoriteFood(foodId);
 
-  // Ensure search results remain intact
   if (foods.length === 0 && currentFoods.length > 0) {
     setFoods(currentFoods);
   }
 };
 
 useEffect(() => {
-  // Load favorite foods when component mounts
-  fetchFavoriteFoods();
-}, []);
-
-useEffect(() => {
   const token = localStorage.getItem("token");
   if (token) {
     fetchFavoriteFoods();
   } else {
-    setFavoriteFoods([]); // Clear favorites if no token
+    setFavoriteFoods([]); 
   }
-}, [/* add dependency for login state if you have one */]);
+}, []);
 
 useEffect(() => {
   handleSearch(debouncedSearchTerm, 1);
@@ -346,11 +185,6 @@ useEffect(() => {
     setRecentSearches(saved);
   }, []);
 
-  // Perform search when debounced term or filters change
-  useEffect(() => {
-    handleSearch(debouncedSearchTerm, 1);
-  }, [debouncedSearchTerm, filters]);
-
   const handleSearch = useCallback(
     async (term: string, page: number = 1): Promise<void> => {
       if (!term.trim() && !filters.category) {
@@ -378,51 +212,8 @@ useEffect(() => {
     [filters]
   );
   //meals
-  const getMeals = async (): Promise<Meal[]> => {
-    const token = localStorage.getItem("token");
-    const response = await fetch("http://localhost:5000/api/meals", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    });
 
-    if (!response.ok) {
-      throw new Error("Failed to fetch meals");
-    }
 
-    return response.json();
-  };
-
-  const addFoodToMeal = async (
-    foodId: string,
-    quantity: number,
-    mealId?: string,
-    mealData?: CreateMealData
-  ) => {
-    const token = localStorage.getItem("token");
-    const response = await fetch("http://localhost:5000/api/meals/add-food", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        foodId,
-        quantity,
-        mealId,
-        mealData,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to add food to meal");
-    }
-
-    const result=await response.json()
-    await addMealToDailyIntake(result.meal._id);
-    return result;
-  };
 
   useEffect(() => {
     const fetchMeals = async () => {
