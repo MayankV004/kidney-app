@@ -13,7 +13,7 @@ import dailyIntakeRoutes from './routes/dailyIntake-routes.js'
 import nutrientTargetRoutes from './routes/nutrientTarget-routes.js'
 import dietChartGenerationRoutes from './routes/dietChartGeneration-routes.js'
 import healthRoutes from './routes/health-routes.js'
-import { seedFoods } from './seed.js';
+
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -58,7 +58,5 @@ app.use((req, res) => {
 });
 
 app.listen(PORT, async () => {
-  console.log(`Server running on port ${PORT}`);
-  // await seedFoods();
-  
+  console.log(`Server running on port ${PORT}`);  
 });

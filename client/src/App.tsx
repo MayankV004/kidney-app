@@ -3,11 +3,11 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login/Login';
 import Signup from './components/Signup/Signup';
 import Dashboard from './components/Dashboard/Dashboard';
-import FoodSearchComponent from './components/Food/FoodSearchComponent';
+import FoodSearchComponent from './components/food/FoodSearchComponent';
 import Navbar from './components/Navbar/Navbar';
 import DietChartGenerator from './components/DietChartGenerator/DietChartGenerator';
 import NutrientDashboard from './components/NutrientDashboard/NutrientDashboard';
-import FavouriteFoodComponent from './components/FavouriteFood/FavouriteFoodComponent';
+import FavouriteFoodComponent from './components/favouriteFood/FavouriteFoodComponent';
 
 
 
@@ -15,7 +15,6 @@ export default function App(): JSX.Element {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Check authentication status on app load
   useEffect(() => {
     const token = localStorage.getItem('token');
     setIsAuthenticated(!!token);

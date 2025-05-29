@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { User, Activity, Settings, CheckCircle, AlertCircle, RefreshCw, Calendar } from 'lucide-react';
+import { User, Activity, Settings, CheckCircle, AlertCircle, RefreshCw, Calendar, Download } from 'lucide-react';
 
-// Type definitions
+// Type definitions (keeping existing types)
 interface DietChart {
   _id: string;
   userId: string;
@@ -58,6 +58,7 @@ const DietChartGenerator: React.FC = () => {
   const [message, setMessage] = useState<string>('');
   const [generatedTargets, setGeneratedTargets] = useState<NutrientTargets | null>(null);
   const [showGenerateNew, setShowGenerateNew] = useState<boolean>(false);
+  const [exportLoading, setExportLoading] = useState<boolean>(false);
   const [customValues, setCustomValues] = useState<NutrientTargets>({
     protein: 60,
     calories: 2000,
@@ -72,7 +73,7 @@ const DietChartGenerator: React.FC = () => {
   });
   const [ageInput, setAgeInput] = useState<string>('');
 
-  // Fetch user profile on component mount
+  // Existing functions (keeping all your current functions)
   useEffect(() => {
     fetchUserProfile();
   }, []);
@@ -102,7 +103,6 @@ const DietChartGenerator: React.FC = () => {
           setAgeInput(userData.age.toString());
         }
         
-        // If user has existing diet chart, don't show generate new by default
         if (userData.dietChart) {
           setShowGenerateNew(false);
         }
@@ -113,6 +113,148 @@ const DietChartGenerator: React.FC = () => {
     } catch (error) {
       console.error('Error fetching user profile:', error);
       setMessage('Network error occurred while fetching profile');
+    }
+  };
+
+  // PDF Export Functions - Method 1: Using jsPDF (Client-side)
+  const exportToPDFClient = async (): Promise<void> => {
+    setExportLoading(true);
+    try {
+      // Dynamic import of jsPDF
+      const { jsPDF } = await import('jspdf');
+      const doc = new jsPDF();
+      
+      const dietData = userProfile?.dietChart || generatedTargets;
+      if (!dietData) {
+        setMessage('No diet chart data available for export');
+        return;
+      }
+
+      // PDF styling
+      const pageWidth = doc.internal.pageSize.width;
+      const margin = 20;
+      let yPosition = 30;
+
+      // Header
+      doc.setFontSize(20);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Diet Chart Report', pageWidth / 2, yPosition, { align: 'center' });
+      
+      yPosition += 15;
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Generated for: ${userProfile?.name || 'User'}`, margin, yPosition);
+      
+      yPosition += 10;
+      doc.text(`Date: ${new Date().toLocaleDateString()}`, margin, yPosition);
+      
+      if (userProfile?.ckdStage) {
+        yPosition += 10;
+        doc.text(`CKD Stage: ${formatCkdStage(userProfile.ckdStage)}`, margin, yPosition);
+      }
+
+      yPosition += 20;
+
+      // Table header
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Nutritional Targets', margin, yPosition);
+      
+      yPosition += 15;
+
+      // Table content
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'normal');
+      
+      const tableData = Object.entries(nutrientLabels).map(([key, label]) => ({
+        nutrient: label,
+        value: dietData[key as keyof NutrientTargets]?.toString() || '0'
+      }));
+
+      // Simple table layout
+      tableData.forEach((row, index) => {
+        if (yPosition > 250) { // New page if needed
+          doc.addPage();
+          yPosition = 30;
+        }
+        
+        doc.setFont('helvetica', 'normal');
+        doc.text(`${row.nutrient}:`, margin, yPosition);
+        doc.setFont('helvetica', 'bold');
+        doc.text(row.value, margin + 100, yPosition);
+        yPosition += 12;
+      });
+
+      // Footer
+      const totalPages = doc.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(
+          `Page ${i} of ${totalPages}`,
+          pageWidth / 2,
+          doc.internal.pageSize.height - 10,
+          { align: 'center' }
+        );
+      }
+
+      // Save the PDF
+      doc.save(`diet-chart-${new Date().toISOString().split('T')[0]}.pdf`);
+      setMessage('Diet chart exported successfully!');
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      setMessage('Error exporting PDF. Please try again.');
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  // PDF Export Functions - Method 2: Using html2canvas + jsPDF (Screenshot approach)
+  const exportToPDFScreenshot = async (): Promise<void> => {
+    setExportLoading(true);
+    try {
+      const { default: html2canvas } = await import('html2canvas');
+      const { jsPDF } = await import('jspdf');
+
+      const element = document.getElementById('diet-chart-content');
+      if (!element) {
+        setMessage('Diet chart content not found');
+        return;
+      }
+
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF();
+      
+      const imgWidth = 210;
+      const pageHeight = 295;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`diet-chart-${new Date().toISOString().split('T')[0]}.pdf`);
+      setMessage('Diet chart exported successfully!');
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      setMessage('Error exporting PDF. Please try again.');
+    } finally {
+      setExportLoading(false);
     }
   };
 
@@ -143,7 +285,6 @@ const DietChartGenerator: React.FC = () => {
       if (response.ok && data.targets) {
         setMessage(data.message || 'Diet chart generated successfully');
         setGeneratedTargets(data.targets);
-        // Refresh user profile to get updated diet chart
         await fetchUserProfile();
         setShowGenerateNew(false);
       } else {
@@ -182,7 +323,6 @@ const DietChartGenerator: React.FC = () => {
       if (response.ok) {
         setMessage(data.message || 'Custom diet chart saved successfully');
         setGeneratedTargets(customValues);
-        // Refresh user profile to get updated diet chart
         await fetchUserProfile();
         setShowGenerateNew(false);
       } else {
@@ -196,6 +336,7 @@ const DietChartGenerator: React.FC = () => {
     }
   };
 
+  // Keep all your existing handler functions
   const handleMethodSelect = (method: GenerationMethod): void => {
     setSelectedMethod(method);
     setMessage('');
@@ -287,9 +428,9 @@ const DietChartGenerator: React.FC = () => {
         </div>
 
         <div className="p-6">
-          {/* Existing Diet Chart Display */}
+          {/* Existing Diet Chart Display with Export Button */}
           {userProfile?.dietChart && !showGenerateNew && (
-            <div className="bg-blue-50 p-6 rounded-lg mb-6 border border-blue-200">
+            <div id="diet-chart-content" className="bg-blue-50 p-6 rounded-lg mb-6 border border-blue-200">
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="text-lg font-medium text-blue-800 flex items-center gap-2">
@@ -301,14 +442,51 @@ const DietChartGenerator: React.FC = () => {
                     Last updated: {formatDate(userProfile.dietChart.updatedAt)}
                   </p>
                 </div>
-                <button
-                  onClick={handleGenerateNew}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
-                  type="button"
-                >
-                  <RefreshCw size={16} />
-                  Generate New
-                </button>
+                <div className="flex gap-2">
+                  {/* Export Dropdown */}
+                  <div className="relative group">
+                    <button
+                      className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors flex items-center gap-2"
+                      type="button"
+                      disabled={exportLoading}
+                    >
+                      <Download size={16} />
+                      {exportLoading ? 'Exporting...' : 'Export PDF'}
+                    </button>
+                    
+                    {/* Dropdown menu */}
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+                      <div className="py-1">
+                        <button
+                          onClick={exportToPDFClient}
+                          disabled={exportLoading}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+                          type="button"
+                        >
+                          Export as PDF
+                        </button>
+                        <button
+                          onClick={exportToPDFScreenshot}
+                          disabled={exportLoading}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+                          type="button"
+                        >
+                          Export as PDF (Screenshot)
+                        </button>
+                    
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <button
+                    onClick={handleGenerateNew}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
+                    type="button"
+                  >
+                    <RefreshCw size={16} />
+                    Generate New
+                  </button>
+                </div>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -324,10 +502,9 @@ const DietChartGenerator: React.FC = () => {
             </div>
           )}
 
-          {/* Show generate new section when no existing chart or user wants to generate new */}
+          {/* Rest of your existing component JSX remains the same */}
           {(!userProfile?.dietChart || showGenerateNew) && (
             <>
-              {/* Cancel button when generating new */}
               {userProfile?.dietChart && showGenerateNew && (
                 <div className="mb-4">
                   <button
@@ -340,7 +517,6 @@ const DietChartGenerator: React.FC = () => {
                 </div>
               )}
 
-              {/* Method Selection */}
               <div className="mb-8">
                 <h2 className="text-lg font-semibold mb-4">
                   {userProfile?.dietChart ? 'Generate New Diet Chart' : 'Choose Generation Method'}
@@ -396,7 +572,6 @@ const DietChartGenerator: React.FC = () => {
                 </div>
               </div>
 
-              {/* Age Based Form */}
               {selectedMethod === 'AGE_BASED' && (
                 <div className="bg-gray-50 p-6 rounded-lg mb-6">
                   <h3 className="text-lg font-medium mb-4">Age Based Generation</h3>
@@ -427,7 +602,6 @@ const DietChartGenerator: React.FC = () => {
                 </div>
               )}
 
-              {/* CKD Stage Form */}
               {selectedMethod === 'CKD_STAGE' && (
                 <div className="bg-gray-50 p-6 rounded-lg mb-6">
                   <h3 className="text-lg font-medium mb-4">CKD Stage Based Generation</h3>
@@ -453,7 +627,6 @@ const DietChartGenerator: React.FC = () => {
                 </div>
               )}
 
-              {/* Custom Values Form */}
               {selectedMethod === 'CUSTOM' && (
                 <div className="bg-gray-50 p-6 rounded-lg mb-6">
                   <h3 className="text-lg font-medium mb-4">Custom Nutrient Targets</h3>
@@ -487,7 +660,6 @@ const DietChartGenerator: React.FC = () => {
             </>
           )}
 
-          {/* Message Display */}
           {message && (
             <div className={`p-4 rounded-lg mb-6 ${
               isSuccessMessage(message)
@@ -505,10 +677,20 @@ const DietChartGenerator: React.FC = () => {
             </div>
           )}
 
-          {/* Generated Targets Display (for newly generated charts) */}
           {generatedTargets && showGenerateNew && (
-            <div className="bg-green-50 p-6 rounded-lg">
-              <h3 className="text-lg font-medium mb-4 text-green-800">Your New Diet Chart Targets</h3>
+            <div id="new-diet-chart-content" className="bg-green-50 p-6 rounded-lg">
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-lg font-medium text-green-800">Your New Diet Chart Targets</h3>
+                <button
+                  onClick={exportToPDFClient}
+                  disabled={exportLoading}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 transition-colors flex items-center gap-2"
+                  type="button"
+                >
+                  <Download size={16} />
+                  {exportLoading ? 'Exporting...' : 'Export PDF'}
+                </button>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {(Object.entries(generatedTargets) as [keyof NutrientTargets, number][]).map(([key, value]) => (
                   <div key={key} className="bg-white p-3 rounded-md border border-green-200">
@@ -520,7 +702,6 @@ const DietChartGenerator: React.FC = () => {
             </div>
           )}
 
-          {/* No diet chart message */}
           {!userProfile?.dietChart && !showGenerateNew && selectedMethod === '' && (
             <div className="text-center py-8 text-gray-500">
               <Activity size={48} className="mx-auto mb-4 text-gray-400" />
