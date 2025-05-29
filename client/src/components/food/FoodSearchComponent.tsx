@@ -96,7 +96,7 @@ const FoodSearchComponent: React.FC = () => {
   const fetchFavoriteFoods = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:5000/api/user/favorites", {
+      const response = await fetch(`${import.meta.env.VITE_API_ROUTE}/api/user/favorites`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -124,7 +124,7 @@ const FoodSearchComponent: React.FC = () => {
   const toggleFavoriteFood = async (foodId: string) => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch("http://localhost:5000/api/user/favorites", {
+      const response = await fetch(`${import.meta.env.VITE_API_ROUTE}/api/user/favorites`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

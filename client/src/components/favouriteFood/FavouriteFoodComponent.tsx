@@ -56,7 +56,7 @@ const FavouriteFoodComponent: React.FC = () => {
         throw new Error('No authentication token found');
       }
 
-      const response = await fetch('http://localhost:5000/api/user/profile', {
+      const response = await fetch(`${import.meta.env.VITE_API_ROUTE}/api/user/profile`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -89,7 +89,7 @@ const FavouriteFoodComponent: React.FC = () => {
         throw new Error('No authentication token found');
       }
 
-      const response = await fetch('http://localhost:5000/api/user/favorites', {
+      const response = await fetch(`${import.meta.env.VITE_API_ROUTE}/api/user/favorites`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

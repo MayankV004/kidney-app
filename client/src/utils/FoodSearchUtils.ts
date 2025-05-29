@@ -1,8 +1,8 @@
-import { Meal ,CreateMealData,Nutrients,Food,SearchResponse,CreateFoodData,SearchFilters} from "../components/Food/food-types"
+import { Meal ,CreateMealData,Nutrients,Food,SearchResponse,CreateFoodData,SearchFilters} from "../components/food/food-types"
 export const addMealToDailyIntake = async (mealId: string) => {
   try {
     const token = localStorage.getItem("token");
-    const response = await fetch("http://localhost:5000/api/daily-intake", {
+    const response = await fetch(`${import.meta.env.VITE_API_ROUTE}/api/daily-intake`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -46,7 +46,7 @@ export const searchFoods = async (
     params.append("limit", "10");
 
     const token = localStorage.getItem("token");
-    const response = await fetch(`http://localhost:5000/api/foods?${params}`, {
+    const response = await fetch(`${import.meta.env.VITE_API_ROUTE}/api/foods?${params}`, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -110,7 +110,7 @@ export const searchFoods = async (
 
  export const createFood = async (foodData: CreateFoodData): Promise<Food> => {
   const token = localStorage.getItem("token");
-  const response = await fetch("http://localhost:5000/api/foods", {
+  const response = await fetch(`${import.meta.env.VITE_API_ROUTE}/api/foods`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -128,7 +128,7 @@ export const searchFoods = async (
 
   export const getMeals = async (): Promise<Meal[]> => {
     const token = localStorage.getItem("token");
-    const response = await fetch("http://localhost:5000/api/meals", {
+    const response = await fetch(`${import.meta.env.VITE_API_ROUTE}/api/meals`, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
@@ -148,7 +148,7 @@ export   const addFoodToMeal = async (
     mealData?: CreateMealData
   ) => {
     const token = localStorage.getItem("token");
-    const response = await fetch("http://localhost:5000/api/meals/add-food", {
+    const response = await fetch(`${import.meta.env.VITE_API_ROUTE}/api/meals/add-food`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

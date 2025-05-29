@@ -69,7 +69,7 @@ const NutrientDashboard = () => {
         setError(null);
 
         // Fetch daily intake for specific date
-        const intakeResponse = await fetch(`http://localhost:5000/api/daily-intake?date=${selectedDate}`, {
+        const intakeResponse = await fetch(`${import.meta.env.VITE_API_ROUTE}/api/daily-intake?date=${selectedDate}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -77,7 +77,7 @@ const NutrientDashboard = () => {
         });
 
         // Fetch nutrient targets
-        const targetsResponse = await fetch(`http://localhost:5000/api/nutrient-targets`, {
+        const targetsResponse = await fetch(`${import.meta.env.VITE_API_ROUTE}/api/nutrient-targets`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",

@@ -86,7 +86,7 @@ const DietChartGenerator: React.FC = () => {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/user/profile', {
+      const response = await fetch(`${import.meta.env.VITE_API_ROUTE}/api/user/profile`, {
          method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -271,7 +271,7 @@ const DietChartGenerator: React.FC = () => {
 
       const requestBody = { method, ...additionalData };
       
-      const response = await fetch('http://localhost:5000/api/generate-diet-chart', {
+      const response = await fetch(`${import.meta.env.VITE_API_ROUTE}/api/generate-diet-chart`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -309,7 +309,7 @@ const DietChartGenerator: React.FC = () => {
         return;
       }
       
-      const response = await fetch('http://localhost:5000/api/nutrient-targets', {
+      const response = await fetch(`${import.meta.env.VITE_API_ROUTE}/api/nutrient-targets`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
