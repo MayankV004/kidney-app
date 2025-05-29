@@ -82,8 +82,8 @@ const Navbar: React.FC<NavbarProps> = ({ userName = "User", onLogout, onNavigate
           {/* Logo */}
           <div className="flex-shrink-0">
             <div className="flex items-center space-x-2">
-
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              
+              <span className="text-3xl font-bold bg-gradient-to-r from-blue-500 to-emerald-500 bg-clip-text text-transparent">
                 KidneyWise
               </span>
             </div>
