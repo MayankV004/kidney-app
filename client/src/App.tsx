@@ -7,7 +7,7 @@ import FoodSearchComponent from './components/food/FoodSearchComponent';
 import Navbar from './components/Navbar/Navbar';
 import DietChartGenerator from './components/DietChartGenerator/DietChartGenerator';
 import NutrientDashboard from './components/NutrientDashboard/NutrientDashboard';
-import FavouriteFoodComponent from './components/FavouriteFood/FavouriteFoodComponent';
+import FavouriteFoodComponent from './components/favouriteFood/FavouriteFoodComponent';
 
 
 
