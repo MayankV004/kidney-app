@@ -1,4 +1,4 @@
-const API_ROOT = import.meta.env.VITE_API_ROOT || 'http://localhost:5000';
+const API_ROOT = import.meta.env.VITE_API_ROUTE || 'http://localhost:5000';
 
 async function request(path: string, data: any) {
   const res = await fetch(`${API_ROOT}${path}`, {
