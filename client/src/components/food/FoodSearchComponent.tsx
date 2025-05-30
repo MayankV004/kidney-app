@@ -414,144 +414,148 @@ const FoodSearchComponent: React.FC = () => {
 
     return (
       <>
-        <div className="flex justify-center items-center space-x-2 mt-6">
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Previous
-          </button>
-
-          {getPageNumbers().map((page) => (
-            <button
-              key={page}
-              onClick={() => handlePageChange(page)}
-              className={`px-3 py-2 rounded-lg border ${
-                currentPage === page
-                  ? "bg-blue-500 text-white border-blue-500"
-                  : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              {page}
-            </button>
-          ))}
-
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Next
-          </button>
-        </div>
+     <div className="flex justify-center items-center space-x-1 sm:space-x-2 mt-6 px-2">
+  <button
+    onClick={() => handlePageChange(currentPage - 1)}
+    disabled={currentPage === 1}
+    className="px-2 sm:px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+  >
+    <span className="hidden sm:inline">Previous</span>
+    <span className="sm:hidden">Prev</span>
+  </button>
+  
+  <div className="flex space-x-1 sm:space-x-2 overflow-x-auto max-w-xs sm:max-w-none">
+    {getPageNumbers().map((page) => (
+      <button
+        key={page}
+        onClick={() => handlePageChange(page)}
+        className={`px-2 sm:px-3 py-2 rounded-lg border text-sm sm:text-base flex-shrink-0 ${
+          currentPage === page
+            ? "bg-blue-500 text-white border-blue-500"
+            : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+        }`}
+      >
+        {page}
+      </button>
+    ))}
+  </div>
+  
+  <button
+    onClick={() => handlePageChange(currentPage + 1)}
+    disabled={currentPage === totalPages}
+    className="px-2 sm:px-3 py-2 rounded-lg bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+  >
+    <span className="hidden sm:inline">Next</span>
+    <span className="sm:hidden">Next</span>
+  </button>
+</div>
       </>
     );
   };
 
   const renderFilters = (): JSX.Element => (
-    <div
-      className={`bg-white/90 backdrop-blur-sm p-4 rounded-xl shadow-lg border border-gray-200 transition-all duration-300 ${
-        showFilters ? "opacity-100" : "opacity-0 pointer-events-none"
-      }`}
-    >
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {/* Category Filter */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Category
-          </label>
-          <select
-            value={filters.category}
-            onChange={(e) => updateFilter("category", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
-          >
-            <option value="">All Categories</option>
-            <option value="VEGETABLES">Vegetables</option>
-            <option value="FRUITS">Fruits</option>
-            <option value="GRAINS">Grains</option>
-            <option value="PROTEIN">Protein</option>
-            <option value="DAIRY">Dairy</option>
-            <option value="BEVERAGES">Beverages</option>
-            <option value="SNACKS">Snacks</option>
-            <option value="OTHER">Other</option>
-          </select>
-        </div>
-
-        {/* Kidney Friendly Filter */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Kidney Friendly
-          </label>
-          <select
-            value={
-              filters.kidneyFriendly === null
-                ? ""
-                : filters.kidneyFriendly.toString()
-            }
-            onChange={(e) =>
-              updateFilter(
-                "kidneyFriendly",
-                e.target.value === "" ? null : e.target.value === "true"
-              )
-            }
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
-          >
-            <option value="">All Foods</option>
-            <option value="true">Kidney Friendly</option>
-            <option value="false">Not Kidney Friendly</option>
-          </select>
-        </div>
-
-        {/* Sort By */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Sort By
-          </label>
-          <select
-            value={filters.sortBy}
-            onChange={(e) =>
-              updateFilter("sortBy", e.target.value as SearchFilters["sortBy"])
-            }
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
-          >
-            <option value="name">Name</option>
-            <option value="calories">Calories</option>
-            <option value="protein">Protein</option>
-          </select>
-        </div>
-
-        {/* Sort Order */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Order
-          </label>
-          <select
-            value={filters.sortOrder}
-            onChange={(e) =>
-              updateFilter(
-                "sortOrder",
-                e.target.value as SearchFilters["sortOrder"]
-              )
-            }
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
-          >
-            <option value="asc">Ascending</option>
-            <option value="desc">Descending</option>
-          </select>
-        </div>
-      </div>
-
-      <div className="flex justify-end mt-4">
-        <button
-          onClick={clearFilters}
-          className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors flex items-center"
-        >
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Clear Filters
-        </button>
-      </div>
+   <div 
+  className={`bg-white/90 backdrop-blur-sm p-3 sm:p-4 lg:p-6 rounded-xl shadow-lg border border-gray-200 transition-all duration-300 ${
+    showFilters ? "opacity-100" : "opacity-0 pointer-events-none"
+  }`}
+>
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+    {/* Category Filter */}
+    <div className="col-span-1">
+      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+        Category
+      </label>
+      <select
+        value={filters.category}
+        onChange={(e) => updateFilter("category", e.target.value)}
+        className="w-full px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      >
+        <option value="">All Categories</option>
+        <option value="VEGETABLES">Vegetables</option>
+        <option value="FRUITS">Fruits</option>
+        <option value="GRAINS">Grains</option>
+        <option value="PROTEIN">Protein</option>
+        <option value="DAIRY">Dairy</option>
+        <option value="BEVERAGES">Beverages</option>
+        <option value="SNACKS">Snacks</option>
+        <option value="OTHER">Other</option>
+      </select>
     </div>
+
+    {/* Kidney Friendly Filter */}
+    <div className="col-span-1">
+      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+        Kidney Friendly
+      </label>
+      <select
+        value={
+          filters.kidneyFriendly === null
+            ? ""
+            : filters.kidneyFriendly.toString()
+        }
+        onChange={(e) =>
+          updateFilter(
+            "kidneyFriendly",
+            e.target.value === "" ? null : e.target.value === "true"
+          )
+        }
+        className="w-full px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      >
+        <option value="">All Foods</option>
+        <option value="true">Kidney Friendly</option>
+        <option value="false">Not Kidney Friendly</option>
+      </select>
+    </div>
+
+    {/* Sort By */}
+    <div className="col-span-1">
+      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+        Sort By
+      </label>
+      <select
+        value={filters.sortBy}
+        onChange={(e) =>
+          updateFilter("sortBy", e.target.value as SearchFilters["sortBy"])
+        }
+        className="w-full px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      >
+        <option value="name">Name</option>
+        <option value="calories">Calories</option>
+        <option value="protein">Protein</option>
+      </select>
+    </div>
+
+    {/* Sort Order */}
+    <div className="col-span-1">
+      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+        Order
+      </label>
+      <select
+        value={filters.sortOrder}
+        onChange={(e) =>
+          updateFilter(
+            "sortOrder",
+            e.target.value as SearchFilters["sortOrder"]
+          )
+        }
+        className="w-full px-2 sm:px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      >
+        <option value="asc">Ascending</option>
+        <option value="desc">Descending</option>
+      </select>
+    </div>
+  </div>
+
+  <div className="flex justify-center sm:justify-end mt-3 sm:mt-4">
+    <button
+      onClick={clearFilters}
+      className="px-3 sm:px-4 py-2 text-sm sm:text-base text-gray-600 hover:text-gray-800 transition-colors flex items-center bg-gray-50 hover:bg-gray-100 rounded-lg sm:bg-transparent sm:hover:bg-transparent"
+    >
+      <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+      Clear Filters
+    </button>
+  </div>
+</div>
   );
 
   const renderNutrientBreakdown = (): JSX.Element => (
@@ -1066,358 +1070,369 @@ const FoodSearchComponent: React.FC = () => {
 
   return (
     <>
-      <div className="max-w-6xl mx-auto p-6 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <Sparkles className="w-8 h-8 text-blue-500 mr-2" />
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Food Explorer
-            </h1>
+     <div className="max-w-6xl mx-auto p-4 sm:p-6  min-h-screen">
+  {/* Header */}
+  <div className="text-center mb-6 sm:mb-8">
+    <div className="flex items-center justify-center mb-4">
+      <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500 mr-2" />
+      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        Food Explorer
+      </h1>
+    </div>
+    <p className="text-gray-600 text-base sm:text-lg mb-4 px-4">
+      Discover nutritional insights for healthy living
+    </p>
+    <div className="flex justify-center">
+      <button
+        onClick={() => setShowMealsModal(true)}
+        className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-2xl hover:from-purple-600 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center font-medium text-sm sm:text-base"
+      >
+        <Target className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+        View Meals
+      </button>
+    </div>
+  </div>
+  
+  <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+    {/* Search Section */}
+    <div
+      className={`space-y-4 sm:space-y-6 ${
+        !recentSearches.length && !selectedFood
+          ? "xl:col-span-3"
+          : "xl:col-span-2"
+      }`}
+    >
+      {/* Search Bar & Buttons */}
+      <div className="space-y-4">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          <div className="relative flex-1 order-1 sm:order-1">
+            <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search for foods..."
+              className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 text-base sm:text-lg border-2 border-gray-200 rounded-2xl focus:border-blue-500 focus:outline-none transition-all duration-300 bg-white/70 backdrop-blur-sm shadow-lg hover:shadow-xl"
+            />
           </div>
-          <p className="text-gray-600 text-lg mb-4">
-            Discover nutritional insights for healthy living
-          </p>
-          <div className="flex justify-center">
+          
+          <div className="flex gap-2 sm:gap-3 order-2 sm:order-2">
             <button
-              onClick={() => setShowMealsModal(true)}
-              className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-2xl hover:from-purple-600 hover:to-pink-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center font-medium"
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex-1 sm:flex-none px-4 sm:px-6 py-3 sm:py-4 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center font-medium text-sm sm:text-base ${
+                showFilters
+                  ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+                  : "bg-white/80 text-gray-700 hover:bg-white"
+              }`}
             >
-              <Target className="w-5 h-5 mr-2" />
-              View Meals
+              <Filter className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Filters</span>
+              <ChevronDown
+                className={`w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2 transition-transform ${
+                  showFilters ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+            
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="flex-1 sm:flex-none px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center font-medium text-sm sm:text-base"
+            >
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Create Food</span>
+              <span className="sm:hidden">Create</span>
             </button>
           </div>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Search Section */}
-          <div
-            className={`space-y-6 ${
-              !recentSearches.length && !selectedFood
-                ? "lg:col-span-3"
-                : "lg:col-span-2"
-            }`}
-          >
-            {/* Search Bar & Buttons */}
-            <div className="space-y-4">
-              <div className="flex gap-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Search for foods..."
-                    className="w-full pl-12 pr-4 py-4 text-lg border-2 border-gray-200 rounded-2xl focus:border-blue-500 focus:outline-none transition-all duration-300 bg-white/70 backdrop-blur-sm shadow-lg hover:shadow-xl"
-                  />
-                </div>
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className={`px-6 py-4 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center font-medium ${
-                    showFilters
-                      ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-                      : "bg-white/80 text-gray-700 hover:bg-white"
-                  }`}
-                >
-                  <Filter className="w-5 h-5 mr-2" />
-                  Filters
-                  <ChevronDown
-                    className={`w-4 h-4 ml-2 transition-transform ${
-                      showFilters ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
-                <button
-                  onClick={() => setShowCreateModal(true)}
-                  className="px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl hover:from-green-600 hover:to-emerald-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center font-medium"
-                >
-                  <Plus className="w-5 h-5 mr-2" />
-                  Create Food
-                </button>
-              </div>
 
-              {/* Filters */}
-              {renderFilters()}
+        {/* Filters */}
+        {renderFilters()}
+      </div>
+
+      {/* Search Results Info */}
+      {(searchTerm || filters.category) && (
+        <div className="bg-white/80 backdrop-blur-sm p-3 sm:p-4 rounded-xl shadow-lg border border-gray-200">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+            <div className="text-gray-600 text-sm sm:text-base">
+              {loading ? (
+                <span className="flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
+                  Searching...
+                </span>
+              ) : (
+                <span>
+                  Found <strong>{totalResults}</strong> results
+                  {searchTerm && (
+                    <span>
+                      {" "}
+                      for "<strong className="break-words">{searchTerm}</strong>"
+                    </span>
+                  )}
+                  {filters.category && (
+                    <span>
+                      {" "}
+                      in <strong>{filters.category}</strong>
+                    </span>
+                  )}
+                </span>
+              )}
             </div>
+            <div className="text-xs sm:text-sm text-gray-500">
+              Page {currentPage} of {totalPages}
+            </div>
+          </div>
+        </div>
+      )}
 
-            {/* Search Results Info */}
-            {(searchTerm || filters.category) && (
-              <div className="bg-white/80 backdrop-blur-sm p-4 rounded-xl shadow-lg border border-gray-200">
-                <div className="flex justify-between items-center">
-                  <div className="text-gray-600">
-                    {loading ? (
-                      <span className="flex items-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
-                        Searching...
-                      </span>
-                    ) : (
-                      <span>
-                        Found <strong>{totalResults}</strong> results
-                        {searchTerm && (
-                          <span>
-                            {" "}
-                            for "<strong>{searchTerm}</strong>"
-                          </span>
-                        )}
-                        {filters.category && (
-                          <span>
-                            {" "}
-                            in <strong>{filters.category}</strong>
-                          </span>
-                        )}
+      {/* Loading */}
+      {loading && (
+        <div className="flex justify-center py-8 sm:py-12">
+          <div className="animate-spin rounded-full h-8 w-8 sm:h-12 sm:w-12 border-b-2 border-blue-500"></div>
+        </div>
+      )}
+
+      {/* Search Results */}
+      {!loading && foods.length > 0 && (
+        <div className="space-y-3 sm:space-y-4">
+          {foods.map((food) => (
+            <div
+              key={food._id}
+              className="bg-white/80 backdrop-blur-sm p-4 sm:p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-blue-300"
+            >
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                <div
+                  className="flex-1 cursor-pointer"
+                  onClick={() => handleFoodClick(food)}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-800 flex-1 pr-2">
+                      {food.name}
+                    </h3>
+                    <button
+                      onClick={(e) => handleFavoriteToggle(e, food._id)}
+                      className={`p-2 rounded-full transition-all duration-200 hover:scale-110 ${
+                        favoriteFoods.includes(food._id)
+                          ? "text-red-500 hover:text-red-600"
+                          : "text-gray-400 hover:text-red-500"
+                      }`}
+                    >
+                      <Heart
+                        className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                          favoriteFoods.includes(food._id)
+                            ? "fill-current"
+                            : ""
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  
+                  <div
+                    className={`inline-block px-3 py-1 rounded-full text-white text-xs sm:text-sm font-medium bg-gradient-to-r ${getCategoryColor(
+                      food.category
+                    )}`}
+                  >
+                    {food.category}
+                  </div>
+                  
+                  <div className="mt-3 flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
+                    <span className="flex items-center">
+                      <Zap className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                      {food.nutrients.calories} cal
+                    </span>
+                    <span className="flex items-center">
+                      <Scale className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                      {food.servingSize}
+                      {food.servingSizeUnit}
+                    </span>
+                    {food.isKidneyFriendly && (
+                      <span className="text-green-600 font-medium flex items-center">
+                        <Target className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                        Kidney Friendly
                       </span>
                     )}
                   </div>
-                  <div className="text-sm text-gray-500">
-                    Page {currentPage} of {totalPages}
+                  
+                  <div className="mt-2 text-xs text-gray-500 break-words">
+                    Protein: {food.nutrients.protein}mg • Sodium:{" "}
+                    {food.nutrients.sodium}mg • Potassium:{" "}
+                    {food.nutrients.potassium}mg
                   </div>
                 </div>
-              </div>
-            )}
-
-            {/* Loading */}
-            {loading && (
-              <div className="flex justify-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-              </div>
-            )}
-
-            {/* Search Results */}
-            {!loading && foods.length > 0 && (
-              <div className="space-y-4">
-                {foods.map((food) => (
-                  <div
-                    key={food._id}
-                    className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-200 hover:border-blue-300"
+                
+                <div className="flex flex-row sm:flex-col gap-2 sm:gap-2 items-center sm:items-end">
+                  <button
+                    onClick={() => handleAddToMeal(food)}
+                    className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 flex items-center justify-center text-xs sm:text-sm font-medium"
                   >
-                    <div className="flex justify-between items-start">
-                      <div
-                        className="flex-1 cursor-pointer"
-                        onClick={() => handleFoodClick(food)}
-                      >
-                        <div className="flex items-start justify-between mb-2">
-                          <h3 className="text-xl font-bold text-gray-800 flex-1">
-                            {food.name}
-                          </h3>
-                          <button
-                            onClick={(e) => handleFavoriteToggle(e, food._id)}
-                            className={`ml-2 p-2 rounded-full transition-all duration-200 hover:scale-110 ${
-                              favoriteFoods.includes(food._id)
-                                ? "text-red-500 hover:text-red-600"
-                                : "text-gray-400 hover:text-red-500"
-                            }`}
-                          >
-                            <Heart
-                              className={`w-5 h-5 ${
-                                favoriteFoods.includes(food._id)
-                                  ? "fill-current"
-                                  : ""
-                              }`}
-                            />
-                          </button>
-                        </div>
-                        <div
-                          className={`inline-block px-3 py-1 rounded-full text-white text-sm font-medium bg-gradient-to-r ${getCategoryColor(
-                            food.category
-                          )}`}
-                        >
-                          {food.category}
-                        </div>
-                        <div className="mt-3 flex items-center space-x-4 text-sm text-gray-600">
-                          <span className="flex items-center">
-                            <Zap className="w-4 h-4 mr-1" />
-                            {food.nutrients.calories} cal
-                          </span>
-                          <span className="flex items-center">
-                            <Scale className="w-4 h-4 mr-1" />
-                            {food.servingSize}
-                            {food.servingSizeUnit}
-                          </span>
-                          {food.isKidneyFriendly && (
-                            <span className="text-green-600 font-medium flex items-center">
-                              <Target className="w-4 h-4 mr-1" />
-                              Kidney Friendly
-                            </span>
-                          )}
-                        </div>
-                        <div className="mt-2 text-xs text-gray-500">
-                          Protein: {food.nutrients.protein}mg • Sodium:{" "}
-                          {food.nutrients.sodium}mg • Potassium:{" "}
-                          {food.nutrients.potassium}mg
-                        </div>
-                      </div>
-                      <div className="flex flex-col space-y-2">
-                        <button
-                          onClick={() => handleAddToMeal(food)}
-                          className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 transition-all duration-200 flex items-center text-sm font-medium"
-                        >
-                          <Plus className="w-4 h-4 mr-1" />
-                          Add to Meal
-                        </button>
-                        <ChevronRight className="w-6 h-6 text-gray-400 self-center" />
-                      </div>
+                    <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                    <span className="hidden sm:inline">Add to Meal</span>
+                    <span className="sm:hidden">Add</span>
+                  </button>
+                  <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400" />
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* Pagination */}
+          {renderPagination()}
+        </div>
+      )}
+
+      {/* No Results */}
+      {!loading &&
+        (searchTerm || filters.category) &&
+        foods.length === 0 && (
+          <div className="text-center py-8 sm:py-12">
+            <div className="bg-white/80 backdrop-blur-sm p-6 sm:p-8 rounded-2xl shadow-lg border border-gray-200">
+              <Search className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
+                No foods found
+              </h3>
+              <p className="text-gray-600 mb-6 text-sm sm:text-base">
+                Try adjusting your search terms or filters
+              </p>
+              <button
+                onClick={clearFilters}
+                className="px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 text-sm sm:text-base"
+              >
+                Clear All Filters
+              </button>
+            </div>
+          </div>
+        )}
+    </div>
+
+    {/* Sidebar */}
+    <div className="space-y-4 sm:space-y-6">
+      {/* Recent Searches */}
+      {recentSearches.length > 0 && (
+        <div className="bg-white/80 backdrop-blur-sm p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-200">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center">
+              <Clock className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+              Recent Searches
+            </h3>
+            <button
+              onClick={clearRecentSearches}
+              className="text-gray-400 hover:text-red-500 transition-colors p-1"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="space-y-2">
+            {recentSearches.map((food) => (
+              <div
+                key={food._id}
+                className="p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-200 border border-transparent hover:border-gray-200"
+              >
+                <div className="flex items-start justify-between">
+                  <div
+                    className="flex-1 pr-2"
+                    onClick={() => handleFoodClick(food)}
+                  >
+                    <div className="font-medium text-gray-800 text-sm sm:text-base break-words">
+                      {food.name}
+                    </div>
+                    <div className="text-xs sm:text-sm text-gray-500 flex items-center mt-1">
+                      <span
+                        className={`inline-block w-2 h-2 rounded-full mr-2 bg-gradient-to-r ${getCategoryColor(
+                          food.category
+                        )}`}
+                      ></span>
+                      {food.category} • {food.nutrients.calories} cal
                     </div>
                   </div>
-                ))}
-
-                {/* Pagination */}
-                {renderPagination()}
-              </div>
-            )}
-
-            {/* No Results */}
-            {!loading &&
-              (searchTerm || filters.category) &&
-              foods.length === 0 && (
-                <div className="text-center py-12">
-                  <div className="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-lg border border-gray-200">
-                    <Search className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                      No foods found
-                    </h3>
-                    <p className="text-gray-600 mb-6">
-                      Try adjusting your search terms or filters
-                    </p>
-                    <button
-                      onClick={clearFilters}
-                      className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
-                    >
-                      Clear All Filters
-                    </button>
-                  </div>
-                </div>
-              )}
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Recent Searches */}
-            {recentSearches.length > 0 && (
-              <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-gray-200">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-gray-800 flex items-center">
-                    <Clock className="w-5 h-5 mr-2" />
-                    Recent Searches
-                  </h3>
                   <button
-                    onClick={clearRecentSearches}
-                    className="text-gray-400 hover:text-red-500 transition-colors"
+                    onClick={(e) => handleFavoriteToggle(e, food._id)}
+                    className={`p-1 rounded-full transition-all duration-200 hover:scale-110 ${
+                      favoriteFoods.includes(food._id)
+                        ? "text-red-500 hover:text-red-600"
+                        : "text-gray-400 hover:text-red-500"
+                    }`}
                   >
-                    <X className="w-4 h-4" />
+                    <Heart
+                      className={`w-4 h-4 ${
+                        favoriteFoods.includes(food._id)
+                          ? "fill-current"
+                          : ""
+                      }`}
+                    />
                   </button>
                 </div>
-                <div className="space-y-2">
-                  {recentSearches.map((food) => (
-                    <div
-                      key={food._id}
-                      className="p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-all duration-200 border border-transparent hover:border-gray-200"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div
-                          className="flex-1"
-                          onClick={() => handleFoodClick(food)}
-                        >
-                          <div className="font-medium text-gray-800">
-                            {food.name}
-                          </div>
-                          <div className="text-sm text-gray-500 flex items-center mt-1">
-                            <span
-                              className={`inline-block w-2 h-2 rounded-full mr-2 bg-gradient-to-r ${getCategoryColor(
-                                food.category
-                              )}`}
-                            ></span>
-                            {food.category} • {food.nutrients.calories} cal
-                          </div>
-                        </div>
-                        <button
-                          onClick={(e) => handleFavoriteToggle(e, food._id)}
-                          className={`p-1 rounded-full transition-all duration-200 hover:scale-110 ${
-                            favoriteFoods.includes(food._id)
-                              ? "text-red-500 hover:text-red-600"
-                              : "text-gray-400 hover:text-red-500"
-                          }`}
-                        >
-                          <Heart
-                            className={`w-4 h-4 ${
-                              favoriteFoods.includes(food._id)
-                                ? "fill-current"
-                                : ""
-                            }`}
-                          />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
-            )}
-
-            {/* Selected Food Details */}
-            {selectedFood && (
-              <div className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-gray-200">
-                <div className="mb-6">
-                  <h2 className="text-2xl font-bold text-gray-800 mb-2">
-                    {selectedFood.name}
-                  </h2>
-                  <div
-                    className={`inline-block px-3 py-1 rounded-full text-white text-sm font-medium bg-gradient-to-r ${getCategoryColor(
-                      selectedFood.category
-                    )}`}
-                  >
-                    {selectedFood.category}
-                  </div>
-                </div>
-
-                {/* View Toggle */}
-                <div className="flex mb-6 bg-gray-100 p-1 rounded-xl">
-                  {[
-                    {
-                      key: "nutrients",
-                      icon: Zap,
-                      label: "Nutrients",
-                    },
-                    {
-                      key: "serving",
-                      icon: Scale,
-                      label: "Serving",
-                    },
-                    {
-                      key: "portions",
-                      icon: Target,
-                      label: "Portions",
-                    },
-                  ].map(({ key, icon: Icon, label }) => (
-                    <button
-                      key={key}
-                      onClick={() => setActiveView(key as ActiveView)}
-                      className={`flex-1 flex items-center justify-center py-2 px-3 rounded-lg transition-all duration-200 ${
-                        activeView === key
-                          ? "bg-white shadow-md text-blue-600"
-                          : "text-gray-600 hover:text-gray-800"
-                      }`}
-                    >
-                      <Icon className="w-4 h-4 mr-1" />
-                      <span className="text-sm font-medium">{label}</span>
-                    </button>
-                  ))}
-                </div>
-
-                {/* Content */}
-                <div className="transition-all duration-300">
-                  {activeView === "nutrients" && renderNutrientBreakdown()}
-                  {activeView === "serving" && renderServingSize()}
-                  {activeView === "portions" && renderPortionSuggestion()}
-                </div>
-              </div>
-            )}
+            ))}
           </div>
         </div>
+      )}
 
-        {/* Create Modal */}
-        {showCreateModal && renderCreateModal()}
-        {showMealModal && renderMealSelectionModal()}
-        {showCreateMealModal && renderCreateMealModal()}
-        {showMealsModal && renderMealsModal()}
-      </div>
+      {/* Selected Food Details */}
+      {selectedFood && (
+        <div className="bg-white/80 backdrop-blur-sm p-4 sm:p-6 rounded-2xl shadow-lg border border-gray-200">
+          <div className="mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-2 break-words">
+              {selectedFood.name}
+            </h2>
+            <div
+              className={`inline-block px-3 py-1 rounded-full text-white text-xs sm:text-sm font-medium bg-gradient-to-r ${getCategoryColor(
+                selectedFood.category
+              )}`}
+            >
+              {selectedFood.category}
+            </div>
+          </div>
+
+          {/* View Toggle */}
+          <div className="flex mb-4 sm:mb-6 bg-gray-100 p-1 rounded-xl">
+            {[
+              {
+                key: "nutrients",
+                icon: Zap,
+                label: "Nutrients",
+              },
+              {
+                key: "serving",
+                icon: Scale,
+                label: "Serving",
+              },
+              {
+                key: "portions",
+                icon: Target,
+                label: "Portions",
+              },
+            ].map(({ key, icon: Icon, label }) => (
+              <button
+                key={key}
+                onClick={() => setActiveView(key as ActiveView)}
+                className={`flex-1 flex items-center justify-center py-2 px-2 sm:px-3 rounded-lg transition-all duration-200 ${
+                  activeView === key
+                    ? "bg-white shadow-md text-blue-600"
+                    : "text-gray-600 hover:text-gray-800"
+                }`}
+              >
+                <Icon className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                <span className="text-xs sm:text-sm font-medium">{label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Content */}
+          <div className="transition-all duration-300">
+            {activeView === "nutrients" && renderNutrientBreakdown()}
+            {activeView === "serving" && renderServingSize()}
+            {activeView === "portions" && renderPortionSuggestion()}
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+
+  {/* Create Modal */}
+  {showCreateModal && renderCreateModal()}
+  {showMealModal && renderMealSelectionModal()}
+  {showCreateMealModal && renderCreateMealModal()}
+  {showMealsModal && renderMealsModal()}
+</div>
     </>
   );
 };

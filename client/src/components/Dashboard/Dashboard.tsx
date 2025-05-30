@@ -333,31 +333,31 @@ const isProfileComplete = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+  <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Welcome Section */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 mb-8">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center">
-                <span className="text-xl font-bold text-white">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
+            <div className="flex items-center space-x-3 sm:space-x-4 w-full sm:w-auto">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-lg sm:text-xl font-bold text-white">
                   {getUserInitials(userProfile.name)}
                 </span>
               </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">Welcome back, {userProfile.name}!</h2>
-                <p className="text-gray-600 mt-1">Here's what's happening with your account today.</p>
+              <div className="min-w-0 flex-1">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">Welcome back, {userProfile.name}!</h2>
+                <p className="text-gray-600 mt-1 text-sm sm:text-base">Here's what's happening with your account today.</p>
               </div>
             </div>
-            <div className="flex space-x-3">
+            <div className="flex space-x-3 w-full sm:w-auto">
               <button
                 onClick={() => setIsEditModalOpen(true)}
-                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                className="flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex-1 sm:flex-none"
               >
                 <Edit3 className="w-4 h-4" />
-                <span>Edit Profile</span>
+                <span className="text-sm sm:text-base">Edit Profile</span>
               </button>
             </div>
           </div>
@@ -365,25 +365,25 @@ const isProfileComplete = () => {
 
         {/* Profile Completion Alert */}
         {!isProfileComplete() && (
-          <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-l-4 border-orange-400 rounded-xl p-6 mb-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+          <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-l-4 border-orange-400 rounded-xl p-4 sm:p-6 mb-6 sm:mb-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
+              <div className="flex items-start sm:items-center space-x-3 w-full sm:w-auto">
+                <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
                   <Heart className="w-5 h-5 text-orange-600" />
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-orange-900">Complete Your CKD Profile</h3>
-                  <p className="text-orange-700 mt-1">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-base sm:text-lg font-semibold text-orange-900">Complete Your CKD Profile</h3>
+                  <p className="text-orange-700 mt-1 text-sm sm:text-base">
                     Help us create a personalized diet chart by completing your kidney health profile
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setIsCKDModalOpen(true)}
-                className="flex items-center space-x-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors"
+                className="flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors w-full sm:w-auto"
               >
                 <FileText className="w-4 h-4" />
-                <span>Complete Profile</span>
+                <span className="text-sm sm:text-base">Complete Profile</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -392,25 +392,25 @@ const isProfileComplete = () => {
 
         {/* Diet Chart Generation Card */}
         {isProfileComplete() && (
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-400 rounded-xl p-6 mb-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-l-4 border-green-400 rounded-xl p-4 sm:p-6 mb-6 sm:mb-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
+              <div className="flex items-start sm:items-center space-x-3 w-full sm:w-auto">
+                <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
                   <FileText className="w-5 h-5 text-green-600" />
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-green-900">Generate Your Personalized Diet Chart</h3>
-                  <p className="text-green-700 mt-1">
+                <div className="min-w-0 flex-1">
+                  <h3 className="text-base sm:text-lg font-semibold text-green-900">Generate Your Personalized Diet Chart</h3>
+                  <p className="text-green-700 mt-1 text-sm sm:text-base">
                     Your profile is complete! Generate a customized CKD-friendly diet plan
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => navigate('/diet-chart')}
-                className="flex items-center space-x-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                className="flex items-center justify-center space-x-2 px-3 sm:px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors w-full sm:w-auto"
               >
                 <FileText className="w-4 h-4" />
-                <span>Generate Diet Chart</span>
+                <span className="text-sm sm:text-base">Generate Diet Chart</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -418,86 +418,86 @@ const isProfileComplete = () => {
         )}
 
         {/* Enhanced User Info Card */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
           {/* Basic Information */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center py-2">
-                <span className="text-gray-600">Full Name</span>
-                <span className="font-medium text-gray-900">{userProfile.name}</span>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Basic Information</h3>
+            <div className="space-y-2 sm:space-y-3">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 space-y-1 sm:space-y-0">
+                <span className="text-gray-600 text-sm sm:text-base">Full Name</span>
+                <span className="font-medium text-gray-900 text-sm sm:text-base break-words">{userProfile.name}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-t border-gray-100">
-                <span className="text-gray-600">Email Address</span>
-                <span className="font-medium text-gray-900">{userProfile.email}</span>
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 border-t border-gray-100 space-y-1 sm:space-y-0">
+                <span className="text-gray-600 text-sm sm:text-base">Email Address</span>
+                <span className="font-medium text-gray-900 text-sm sm:text-base break-all">{userProfile.email}</span>
               </div>
               {userProfile.age && (
-                <div className="flex justify-between items-center py-2 border-t border-gray-100">
-                  <span className="text-gray-600">Age</span>
-                  <span className="font-medium text-gray-900">{userProfile.age} years</span>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 border-t border-gray-100 space-y-1 sm:space-y-0">
+                  <span className="text-gray-600 text-sm sm:text-base">Age</span>
+                  <span className="font-medium text-gray-900 text-sm sm:text-base">{userProfile.age} years</span>
                 </div>
               )}
               {userProfile.gender && (
-                <div className="flex justify-between items-center py-2 border-t border-gray-100">
-                  <span className="text-gray-600">Gender</span>
-                  <span className="font-medium text-gray-900 capitalize">{userProfile.gender}</span>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 border-t border-gray-100 space-y-1 sm:space-y-0">
+                  <span className="text-gray-600 text-sm sm:text-base">Gender</span>
+                  <span className="font-medium text-gray-900 capitalize text-sm sm:text-base">{userProfile.gender}</span>
                 </div>
               )}
-              <div className="flex justify-between items-center py-2 border-t border-gray-100">
-                <span className="text-gray-600">Member Since</span>
-                <span className="font-medium text-gray-900">{formatDate(userProfile.createdAt)}</span>
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 border-t border-gray-100 space-y-1 sm:space-y-0">
+                <span className="text-gray-600 text-sm sm:text-base">Member Since</span>
+                <span className="font-medium text-gray-900 text-sm sm:text-base">{formatDate(userProfile.createdAt)}</span>
               </div>
             </div>
           </div>
 
           {/* Health & CKD Information */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Health & CKD Information</h3>
-            <div className="space-y-3">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Health & CKD Information</h3>
+            <div className="space-y-2 sm:space-y-3">
               {userProfile.height && (
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-gray-600">Height</span>
-                  <span className="font-medium text-gray-900">{userProfile.height} cm</span>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 space-y-1 sm:space-y-0">
+                  <span className="text-gray-600 text-sm sm:text-base">Height</span>
+                  <span className="font-medium text-gray-900 text-sm sm:text-base">{userProfile.height} cm</span>
                 </div>
               )}
               {userProfile.weight && (
-                <div className="flex justify-between items-center py-2 border-t border-gray-100">
-                  <span className="text-gray-600">Weight</span>
-                  <span className="font-medium text-gray-900">{userProfile.weight} kg</span>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 border-t border-gray-100 space-y-1 sm:space-y-0">
+                  <span className="text-gray-600 text-sm sm:text-base">Weight</span>
+                  <span className="font-medium text-gray-900 text-sm sm:text-base">{userProfile.weight} kg</span>
                 </div>
               )}
               {userProfile.ckdStage && (
-                <div className="flex justify-between items-center py-2 border-t border-gray-100">
-                  <span className="text-gray-600">CKD Stage</span>
-                  <span className="font-medium text-gray-900">{formatCKDStage(userProfile.ckdStage)}</span>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 border-t border-gray-100 space-y-1 sm:space-y-0">
+                  <span className="text-gray-600 text-sm sm:text-base">CKD Stage</span>
+                  <span className="font-medium text-gray-900 text-sm sm:text-base">{formatCKDStage(userProfile.ckdStage)}</span>
                 </div>
               )}
               {userProfile.onDialysis !== undefined && (
-                <div className="flex justify-between items-center py-2 border-t border-gray-100">
-                  <span className="text-gray-600">On Dialysis</span>
-                  <span className="font-medium text-gray-900">{userProfile.onDialysis ? 'Yes' : 'No'}</span>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 border-t border-gray-100 space-y-1 sm:space-y-0">
+                  <span className="text-gray-600 text-sm sm:text-base">On Dialysis</span>
+                  <span className="font-medium text-gray-900 text-sm sm:text-base">{userProfile.onDialysis ? 'Yes' : 'No'}</span>
                 </div>
               )}
               {userProfile.hasDiabetes !== undefined && (
-                <div className="flex justify-between items-center py-2 border-t border-gray-100">
-                  <span className="text-gray-600">Has Diabetes</span>
-                  <span className="font-medium text-gray-900">{userProfile.hasDiabetes ? 'Yes' : 'No'}</span>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 border-t border-gray-100 space-y-1 sm:space-y-0">
+                  <span className="text-gray-600 text-sm sm:text-base">Has Diabetes</span>
+                  <span className="font-medium text-gray-900 text-sm sm:text-base">{userProfile.hasDiabetes ? 'Yes' : 'No'}</span>
                 </div>
               )}
               {userProfile.hasHypertension !== undefined && (
-                <div className="flex justify-between items-center py-2 border-t border-gray-100">
-                  <span className="text-gray-600">Has Hypertension</span>
-                  <span className="font-medium text-gray-900">{userProfile.hasHypertension ? 'Yes' : 'No'}</span>
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center py-2 border-t border-gray-100 space-y-1 sm:space-y-0">
+                  <span className="text-gray-600 text-sm sm:text-base">Has Hypertension</span>
+                  <span className="font-medium text-gray-900 text-sm sm:text-base">{userProfile.hasHypertension ? 'Yes' : 'No'}</span>
                 </div>
               )}
               {userProfile.medicalConditions && userProfile.medicalConditions.length > 0 && (
                 <div className="py-2 border-t border-gray-100">
-                  <span className="text-gray-600 block mb-2">Medical Conditions</span>
-                  <div className="flex flex-wrap gap-1">
+                  <span className="text-gray-600 block mb-2 text-sm sm:text-base">Medical Conditions</span>
+                  <div className="flex flex-wrap gap-1 sm:gap-2">
                     {userProfile.medicalConditions.map((condition, index) => (
                       <span
                         key={index}
-                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"
+                        className="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800"
                       >
                         {condition}
                       </span>
@@ -514,9 +514,9 @@ const isProfileComplete = () => {
       {isEditModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
+            <div className="p-4 sm:p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-gray-900">Edit Profile</h2>
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Edit Profile</h2>
                 <button
                   onClick={() => setIsEditModalOpen(false)}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -526,18 +526,18 @@ const isProfileComplete = () => {
               </div>
             </div>
             
-            <form onSubmit={handleEditSubmit} className="p-6 space-y-6">
+            <form onSubmit={handleEditSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
               {/* Basic Information */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">Basic Information</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                     <input
                       type="text"
                       value={editFormData.name}
                       onChange={(e) => setEditFormData(prev => ({ ...prev, name: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                       required
                     />
                   </div>
@@ -547,7 +547,7 @@ const isProfileComplete = () => {
                       type="email"
                       value={editFormData.email}
                       onChange={(e) => setEditFormData(prev => ({ ...prev, email: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                       required
                     />
                   </div>
@@ -557,7 +557,7 @@ const isProfileComplete = () => {
                       type="number"
                       value={editFormData.age}
                       onChange={(e) => setEditFormData(prev => ({ ...prev, age: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                       min="13"
                       max="120"
                     />
@@ -567,7 +567,7 @@ const isProfileComplete = () => {
                     <select
                       value={editFormData.gender}
                       onChange={(e) => setEditFormData(prev => ({ ...prev, gender: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                     >
                       <option value="">Select Gender</option>
                       {genderOptions.map(option => (
@@ -582,15 +582,15 @@ const isProfileComplete = () => {
 
               {/* Health & Fitness */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Health & Fitness</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-3 sm:mb-4">Health & Fitness</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Height (cm)</label>
                     <input
                       type="number"
                       value={editFormData.height}
                       onChange={(e) => setEditFormData(prev => ({ ...prev, height: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                       min="100"
                       max="250"
                       step="0.1"
@@ -602,18 +602,18 @@ const isProfileComplete = () => {
                       type="number"
                       value={editFormData.weight}
                       onChange={(e) => setEditFormData(prev => ({ ...prev, weight: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                       min="30"
                       max="300"
                       step="0.1"
                     />
                   </div>
-                  <div>
+                  <div className="sm:col-span-2 lg:col-span-1">
                     <label className="block text-sm font-medium text-gray-700 mb-1">Activity Level</label>
                     <select
                       value={editFormData.activityLevel}
                       onChange={(e) => setEditFormData(prev => ({ ...prev, activityLevel: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                     >
                       <option value="">Select Activity Level</option>
                       {activityLevels.map(level => (
@@ -629,7 +629,7 @@ const isProfileComplete = () => {
               {/* Dietary Preferences */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Dietary Preferences</label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                   {dietaryOptions.map(option => (
                     <label key={option} className="flex items-center space-x-2">
                       <input
@@ -647,7 +647,7 @@ const isProfileComplete = () => {
               {/* Health Goals */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Health Goals</label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                   {healthGoalOptions.map(goal => (
                     <label key={goal} className="flex items-center space-x-2">
                       <input
@@ -663,18 +663,18 @@ const isProfileComplete = () => {
               </div>
 
               {/* Form Actions */}
-              <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+              <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => setIsEditModalOpen(false)}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-sm sm:text-base"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isUpdating}
-                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                  className="flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 text-sm sm:text-base"
                 >
                   {isUpdating ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -691,9 +691,9 @@ const isProfileComplete = () => {
       {isCKDModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
+            <div className="p-4 sm:p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold text-gray-900">Complete CKD Profile</h2>
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Complete CKD Profile</h2>
                 <button
                   onClick={() => setIsCKDModalOpen(false)}
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -703,14 +703,14 @@ const isProfileComplete = () => {
               </div>
             </div>
             
-            <form onSubmit={handleCKDSubmit} className="p-6 space-y-6">
+            <form onSubmit={handleCKDSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
               {/* CKD Stage */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">CKD Stage</label>
                 <select
                   value={ckdFormData.ckdStage}
                   onChange={(e) => setCKDFormData(prev => ({ ...prev, ckdStage: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                   required
                 >
                   <option value="">Select CKD Stage</option>
@@ -728,7 +728,7 @@ const isProfileComplete = () => {
                 <select
                   value={ckdFormData.howDidYouHear}
                   onChange={(e) => setCKDFormData(prev => ({ ...prev, howDidYouHear: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                   required
                 >
                   <option value="">Select an option</option>
@@ -739,7 +739,7 @@ const isProfileComplete = () => {
               </div>
 
               {/* Medical Conditions */}
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <label className="block text-sm font-medium text-gray-700">Medical Conditions</label>
                 
                 <div className="flex items-center space-x-2">
@@ -777,18 +777,18 @@ const isProfileComplete = () => {
               </div>
 
               {/* Form Actions */}
-              <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+              <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3 pt-4 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={() => setIsCKDModalOpen(false)}
-                  className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                  className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors text-sm sm:text-base"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isUpdating}
-                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50"
+                  className="flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 text-sm sm:text-base"
                 >
                   {isUpdating ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -803,10 +803,10 @@ const isProfileComplete = () => {
         </div>
       )}
       {/* Logout Button - Fixed Position */}
-      <div className="fixed bottom-6 right-6">
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6">
         <button
           onClick={handleLogout}
-          className="flex items-center space-x-2 px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+          className="flex items-center space-x-2 px-3 sm:px-4 py-2 sm:py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 text-sm sm:text-base"
         >
           <LogOut className="w-4 h-4" />
           <span className="font-medium">Logout</span>
