@@ -213,7 +213,7 @@ const FavouriteFoodComponent: React.FC = () => {
               <div className="p-6">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{food.name}</h3>
+                    <h3 className="text-xl font-bold text-gray-900 mb-2">{food?.name?}</h3>
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryColor(food.category)}`}>
                       {food.category.toLowerCase().replace('_', ' ')}
                     </span>
