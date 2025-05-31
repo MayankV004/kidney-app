@@ -29,7 +29,7 @@ interface Food {
 interface UserProfile {
   _id: string;
   email: string;
-  name?: string;
+  name: string;
   // Add other profile fields as needed
 }
 
