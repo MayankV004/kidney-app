@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { LogOut, User, Home, Settings, Bell, AlertCircle, Edit3, X, Save, ChevronRight, FileText, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { UserProfile,EditFormData, CKDFormData } from './dashboard-types';
+import { toast } from 'react-hot-toast';
 
 interface DashboardProps {
   updateAuthState: (authenticated: boolean) => void;
@@ -77,7 +78,7 @@ export default function Dashboard({ updateAuthState }: DashboardProps) {
   // Check if profile is complete for CKD questionnaire
 const isProfileComplete = () => {
   if (!userProfile) return false;
-  console.log("Here is user profile",userProfile.medicalConditions?.length);
+  // console.log("Here is user profile",userProfile.medicalConditions?.length);
   
   return userProfile.ckdStage && 
         
@@ -100,7 +101,7 @@ const isProfileComplete = () => {
           'Content-Type': 'application/json',
         },
       });
-       console.log(response)
+      //  console.log(response.ok)
       if (!response.ok) {
         if (response.status === 401) {
           handleLogout();
@@ -110,7 +111,7 @@ const isProfileComplete = () => {
       }
 
       const userData = await response.json();
-    console.log(userData)
+    // console.log(userData)
       setUserProfile(userData);
       setError(null);
     } catch (error) {
@@ -172,7 +173,7 @@ const isProfileComplete = () => {
                     userProfile.onDialysis !== undefined &&
                     userProfile.hasDiabetes !== undefined &&
                     userProfile.hasHypertension !== undefined;
-    console.log(userProfile.onDialysis);
+    // console.log(userProfile.onDialysis);
           
     setProfileComplete(Boolean(complete));
   }
@@ -211,6 +212,7 @@ const isProfileComplete = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userData');
     updateAuthState(false);
+    toast.success('You have been logged out successfully.');
     navigate('/login');
   };
 

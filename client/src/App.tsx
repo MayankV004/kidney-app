@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login/Login';
 import Signup from './components/Signup/Signup';
@@ -8,6 +8,7 @@ import Navbar from './components/Navbar/Navbar';
 import DietChartGenerator from './components/DietChartGenerator/DietChartGenerator';
 import NutrientDashboard from './components/NutrientDashboard/NutrientDashboard';
 import FavouriteFoodComponent from './components/favouriteFood/FavouriteFoodComponent';
+import { Toaster } from 'react-hot-toast';
 
 
 
@@ -68,6 +69,7 @@ export default function App(): JSX.Element {
         element={isAuthenticated ?<FavouriteFoodComponent/> : <Navigate to="/login" />} 
       />
     </Routes>
+    <Toaster position="bottom-right" reverseOrder={false} />
   </div>
 );
 }

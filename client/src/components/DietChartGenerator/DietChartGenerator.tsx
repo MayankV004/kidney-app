@@ -116,7 +116,6 @@ const DietChartGenerator: React.FC = () => {
     }
   };
 
-  // PDF Export Functions - Method 1: Using jsPDF (Client-side)
   const exportToPDFClient = async (): Promise<void> => {
     setExportLoading(true);
     try {

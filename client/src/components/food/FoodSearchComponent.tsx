@@ -21,18 +21,35 @@ import {
   CreateMealData,
   Nutrients,
   Food,
-  SearchResponse,
   CreateFoodData,
   SearchFilters,
 } from "./food-types.ts";
 import {
-  addMealToDailyIntake,
   searchFoods,
   createFood,
   getMeals,
   addFoodToMeal,
   getCategoryColor,
 } from "../../utils/FoodSearchUtils.ts";
+interface UserProfile {
+  _id: string;
+  name: string;
+  email: string;
+  age?: number;
+  ckdStage?: 'STAGE_1' | 'STAGE_2' | 'STAGE_3' | 'STAGE_4' | 'STAGE_5';
+  createdAt: string;
+  updatedAt: string;
+}
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import toast from "react-hot-toast";
+interface TableData {
+  "#": number;
+  "Meal Name": string;
+  "Time": string;
+  "Water (ml)": number;
+  "Foods": string;
+}
 type ActiveView = "nutrients" | "serving" | "portions";
 // Debounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -51,6 +68,7 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 const FoodSearchComponent: React.FC = () => {
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [foods, setFoods] = useState<Food[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -388,6 +406,167 @@ const FoodSearchComponent: React.FC = () => {
       },
     }));
   };
+
+    useEffect(() => { // fetching user profile to display details in meals PDF
+      fetchUserProfile();
+    }, []);
+
+  const fetchUserProfile = async (): Promise<void> => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('You need to be logged in to view your profile');
+        return;
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_API_ROUTE}/api/user/profile`, {
+         method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch user profile');
+      }
+      const userData: UserProfile = await response.json();
+      setUserProfile(userData);
+    
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      toast.error('Failed to fetch user profile. Please try again later.');
+      
+    }
+  };
+type RGBColor = [number, number, number];
+const exportMealsAsPDF = async (
+): Promise<void> => {
+  try {
+    const doc = new jsPDF();
+    
+    // Professional colors - minimal and clean
+    const primaryColor: [number, number, number] = [52, 73, 94];    // Dark slate gray
+    const lightGray: [number, number, number] = [245, 245, 245];    // Very light gray
+    const textColor: [number, number, number] = [51, 51, 51];       // Dark gray
+    
+    // Minimal margins for professional look
+    const margin = 15;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let currentY = 20;
+    
+    // === HEADER SECTION ===
+    // KidneyWise branding - top right
+    doc.setTextColor(...primaryColor);
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(76, 175, 80);
+    doc.text("KidneyWise", pageWidth - margin - 25, currentY);
+    
+    // Report title - left aligned
+    doc.setTextColor(...textColor);
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("Meals Report", margin, currentY);
+
+   // === USER PROFILE SECTION ===
+    currentY += 8;
+    // User details
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(10);
+    
+    if (userProfile) {
+      doc.text(`Name: ${userProfile.name}`, margin, currentY);
+      currentY += 6;
+      doc.text(`Age: ${userProfile.age} years`, margin, currentY);
+      currentY += 6;
+      doc.text(`CKD Stage: ${userProfile.ckdStage}`, margin, currentY);
+      currentY += 15;
+    } else {
+      doc.text("User: Not logged in", margin, currentY);
+      currentY += 15;
+    }
+    
+    // === MEALS TABLE SECTION ===
+    doc.setFont("Helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("Meals Data", margin, currentY);
+    
+    currentY += 10;
+    
+    // Prepare table data
+    const tableData = meals.map((meal: Meal, index: number) => [
+      (index + 1).toString(),
+      meal.name,
+      meal.timeOfDay.charAt(0).toUpperCase() + meal.timeOfDay.slice(1),
+      (meal.waterIntake || 0).toString(),
+      meal.foods.map(f => f.food.name).join(", ")
+    ]);
+    
+    const tableColumns = ["#", "Meal Name", "Time", "Water (ml)", "Foods"];
+    
+    // Create clean, professional table
+    autoTable(doc, {
+      head: [tableColumns],
+      body: tableData,
+      startY: currentY,
+      styles: { 
+        fontSize: 9,
+        cellPadding: 4,
+        lineColor: [220, 220, 220],
+        lineWidth: 0.3,
+        textColor: [...textColor]
+      },
+      headStyles: { 
+        fillColor: [...lightGray],
+        textColor: [...primaryColor],
+        fontSize: 9,
+        fontStyle: 'bold'
+      },
+      alternateRowStyles: { 
+        fillColor: [250, 250, 250] 
+      },
+      columnStyles: {
+        0: { cellWidth: 10, halign: 'center' },
+        1: { cellWidth: 30, halign: 'center' },
+        2: { cellWidth: 28, halign: 'center' },
+        3: { cellWidth: 28, halign: 'center' },
+        4: { cellWidth: 'auto' }
+      },
+      margin: { left: margin, right: margin },
+      theme: 'grid',
+      tableLineColor: [220, 220, 220],
+      tableLineWidth: 0.3,
+    });
+    
+    // === FOOTER ===
+    const finalY = (doc as any).lastAutoTable.finalY + 20;
+    
+    // Report generation time
+    doc.setFont("Helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(120, 120, 120);
+    
+    const generatedAt = new Date().toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+    
+    doc.text(`Report generated on: ${generatedAt}`, margin, finalY);
+    
+    // Save the PDF
+    const filename = `meals-report-${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(filename);
+    
+    toast.success("Meals report exported successfully!");
+    
+  } catch (error) {
+    console.error("Error exporting meals as PDF:", error);
+    toast.error("Failed to export meals. Please try again.");
+  }
+};
 
   const renderPagination = (): JSX.Element => {
     if (totalPages <= 1) return <></>;
@@ -993,12 +1172,21 @@ const FoodSearchComponent: React.FC = () => {
         <div className="p-6 border-b border-gray-200">
           <div className="flex justify-between items-center">
             <h2 className="text-2xl font-bold text-gray-800">Your Meals</h2>
-            <button
+            <div className="flex items-center space-x-4">
+              <button
+                  onClick={exportMealsAsPDF}
+                  className="px-4 py-2 bg-gradient-to-r from-green-500 to-blue-600 text-white rounded-lg hover:scale-105 transition-all duration-200 flex items-center"
+                >
+                  Export Meals as PDF
+                </button>
+              <button
               onClick={() => setShowMealsModal(false)}
               className="text-gray-400 hover:text-gray-600 transition-colors"
             >
               <X className="w-6 h-6" />
             </button>
+            </div>
+            
           </div>
         </div>
 

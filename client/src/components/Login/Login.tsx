@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { login } from '../../services/api';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Heart, Eye, EyeOff, ArrowRight, AlertCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface LoginProps {
   updateAuthState: (authenticated: boolean) => void;
@@ -44,12 +45,13 @@ export default function Login({ updateAuthState }: LoginProps) {
         }
         
         updateAuthState(true);
-        alert('Login successful!');
+        toast.success('Login successful! Welcome back to KidneyWise!');
         navigate('/dashboard');
       }
     } catch (error) {
       console.error('Login error:', error);
       setError('Login failed. Please try again.');
+      toast.error('Login failed. Please try again.');
     }
     
     setIsLoading(false);
